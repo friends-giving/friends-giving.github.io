@@ -98,6 +98,14 @@
     content:"";position:absolute;inset:0;
     background:linear-gradient(180deg, var(--bg) 0%, var(--bg) 3%, rgba(27,16,9,.93) 9%, rgba(27,16,9,.84) 18%, rgba(27,16,9,.72) 32%, rgba(27,16,9,.55) 62%, rgba(27,16,9,.75) 100%);
   }
+  /* soft blur on the top of the photo only (scrolls with the hero) */
+  .hero::before{
+    content:"";position:absolute;z-index:1;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 150px);pointer-events:none;
+    background:linear-gradient(180deg, rgba(27,16,9,.9) 0%, rgba(27,16,9,.45) 50%, rgba(27,16,9,0) 100%);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 35%,transparent 100%);
+    mask-image:linear-gradient(180deg,#000 0%,#000 35%,transparent 100%);
+  }
   .hero .wrap{display:flex;flex-direction:column;align-items:center}
   .bow{width:84px;height:auto;color:var(--pumpkin);margin-bottom:4px}
   .invited{font-family:var(--hand);font-size:22px;color:var(--gold);line-height:1.2}
@@ -186,14 +194,6 @@
   .special span{display:block;font-size:12.5px;color:var(--soft);line-height:1.45;margin-top:3px;word-break:keep-all}
   .rules-end{text-align:center;margin-top:18px;font-family:var(--hand);font-size:21px;color:var(--gold);line-height:1.35;word-break:keep-all}
 
-  /* soft blurred fade under the status bar */
-  .top-fade{
-    position:fixed;z-index:15;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 64px);pointer-events:none;
-    background:linear-gradient(180deg, rgba(27,16,9,.92) 0%, rgba(27,16,9,.6) 45%, rgba(27,16,9,0) 100%);
-    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 40%,transparent 100%);
-    mask-image:linear-gradient(180deg,#000 0%,#000 40%,transparent 100%);
-  }
   /* top nav */
   .topnav{
     position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 12px);
@@ -280,7 +280,6 @@
 <div class="leaves" aria-hidden="true" id="leaves"></div>
 
 <!-- HERO -->
-<div class="top-fade" aria-hidden="true"></div>
 <nav class="topnav" aria-label="Menu">
   <a href="./" class="on">HOME</a>
   <a href="rsvp.html">RSVP</a>

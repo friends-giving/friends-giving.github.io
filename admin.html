@@ -42,14 +42,6 @@
   .wrap{position:relative;z-index:2;max-width:560px;margin:0 auto;padding-left:clamp(18px,5.5vw,28px);padding-right:clamp(18px,5.5vw,28px)}
   [hidden]{display:none!important}
 
-  /* soft blurred fade under the status bar */
-  .top-fade{
-    position:fixed;z-index:15;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 64px);pointer-events:none;
-    background:linear-gradient(180deg, rgba(27,16,9,.92) 0%, rgba(27,16,9,.6) 45%, rgba(27,16,9,0) 100%);
-    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 40%,transparent 100%);
-    mask-image:linear-gradient(180deg,#000 0%,#000 40%,transparent 100%);
-  }
   .topnav{
     position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 12px);
     display:flex;gap:2px;padding:4px;border-radius:999px;
@@ -132,7 +124,6 @@
 </head>
 <body>
 
-<div class="top-fade" aria-hidden="true"></div>
 <nav class="topnav" aria-label="Menu">
   <a href="./">HOME</a>
   <a href="rsvp.html">RSVP</a>

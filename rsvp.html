@@ -60,14 +60,6 @@
     100%{transform:translate(-10px,105vh) rotate(340deg)}
   }
 
-  /* soft blurred fade under the status bar */
-  .top-fade{
-    position:fixed;z-index:15;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 64px);pointer-events:none;
-    background:linear-gradient(180deg, rgba(27,16,9,.92) 0%, rgba(27,16,9,.6) 45%, rgba(27,16,9,0) 100%);
-    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 40%,transparent 100%);
-    mask-image:linear-gradient(180deg,#000 0%,#000 40%,transparent 100%);
-  }
   /* top nav */
   .topnav{
     position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 12px);
@@ -194,7 +186,6 @@
 </svg>
 <div class="leaves" aria-hidden="true" id="leaves"></div>
 
-<div class="top-fade" aria-hidden="true"></div>
 <nav class="topnav" aria-label="Menu">
   <a href="./">HOME</a>
   <a href="rsvp.html" class="on">RSVP</a>
