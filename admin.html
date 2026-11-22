@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Guest List · Friendsgiving</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Jost:wght@400;500&family=Gaegu:wght@700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#1b1009;
+    --card:rgba(246,232,207,.055);
+    --card-2:rgba(233,137,74,.10);
+    --ink:#f6e8cf;
+    --soft:rgba(246,232,207,.70);
+    --faint:rgba(246,232,207,.40);
+    --pumpkin:#ec8a48;
+    --gold:#eabb6e;
+    --cran:#e0786b;
+    --leaf:#a9b36c;
+    --line:rgba(234,187,110,.30);
+    --serif:'Fraunces', Georgia, serif;
+    --hand:'Gaegu', 'Gowun Dodum', cursive;
+    --kr:'Gowun Dodum', sans-serif;
+    --label:'Jost', 'Gowun Dodum', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;min-width:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--ink);font:16px/1.7 var(--kr);min-height:100vh;
+    overflow-x:clip;-webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(120% 70% at 50% -10%, rgba(236,138,72,.13), transparent 55%);
+  }
+  .wrap{position:relative;z-index:2;max-width:560px;margin:0 auto;padding-left:clamp(18px,5.5vw,28px);padding-right:clamp(18px,5.5vw,28px)}
+  [hidden]{display:none!important}
+
+  .topnav{
+    position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 12px);
+    display:flex;gap:2px;padding:4px;border-radius:999px;
+    background:rgba(27,16,9,.62);border:1px solid var(--line);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
+  .topnav a{font-family:var(--label);font-weight:500;font-size:12.5px;letter-spacing:.14em;color:var(--soft);text-decoration:none;padding:6px 13px;border-radius:999px;line-height:1.2}
+  .topnav a:hover{color:var(--ink)}
+
+  .head{text-align:center;padding-top:clamp(84px,20vw,108px);margin-bottom:24px}
+  .head .hand{display:block;font-family:var(--hand);font-size:21px;color:var(--gold);line-height:1.2}
+  .head h1{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:clamp(44px,13vw,64px);line-height:1;margin-top:6px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 20px}
+  .center{text-align:center}
+  .card p{font-size:15px;color:var(--soft);word-break:keep-all;text-wrap:balance}
+  .card p b{color:var(--ink);font-weight:400}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:20px;cursor:pointer;
+    font-family:var(--label);font-weight:500;font-size:15.5px;letter-spacing:.06em;
+    color:#1f1f1f;background:#fff;border:0;padding:12px 22px;border-radius:999px;
+    box-shadow:0 8px 24px rgba(0,0,0,.3);transition:transform .2s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn:disabled{opacity:.6;cursor:default;transform:none}
+  .btn svg{width:18px;height:18px}
+  .link{background:none;border:0;cursor:pointer;font:inherit;font-size:13.5px;color:var(--soft);text-decoration:underline;text-underline-offset:3px}
+  .link:hover{color:var(--ink)}
+  .warn{margin-top:16px;padding:12px 14px;border-radius:14px;font-size:14px;line-height:1.6;color:var(--ink);background:rgba(224,120,107,.12);border:1px solid rgba(224,120,107,.45);word-break:keep-all;text-align:left}
+  .err{margin-top:14px;font-size:14px;color:var(--cran);word-break:keep-all}
+
+  /* dashboard */
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;color:var(--soft);margin-bottom:14px}
+  .bar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .stat{appearance:none;font:inherit;color:inherit;cursor:pointer;text-align:center;padding:14px 6px 12px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);transition:border-color .2s,background .2s}
+  .stat.on{border-color:var(--pumpkin);background:var(--card-2)}
+  .stat i{display:block;font-style:normal;font-size:20px;line-height:1.2}
+  .stat b{display:block;font-family:var(--serif);font-weight:600;font-size:30px;line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums}
+  .stat span{display:block;font-family:var(--label);font-size:11.5px;letter-spacing:.14em;color:var(--soft)}
+  .all{display:block;margin:12px auto 0}
+
+  .guests{list-style:none;margin-top:16px;display:grid;gap:8px}
+  .guests li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:var(--card);border:1px solid rgba(234,187,110,.18)}
+  .guests .e{flex:none;font-size:20px;line-height:1.45}
+  .guests .body{flex:1}
+  .guests .top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .guests b{font-weight:400;font-size:16px;line-height:1.45}
+  .eta{font-size:12.5px;padding:1px 9px;border-radius:999px;background:rgba(234,187,110,.14);border:1px solid rgba(234,187,110,.4);color:var(--gold);white-space:nowrap}
+  .guests p{font-size:14px;color:var(--soft);line-height:1.55;margin-top:2px;word-break:keep-all;overflow-wrap:anywhere}
+  .guests time{display:block;font-family:var(--label);font-size:11.5px;letter-spacing:.06em;color:var(--faint);margin-top:4px}
+  .empty{text-align:center;font-family:var(--hand);font-size:20px;color:var(--faint);margin-top:22px}
+
+  .foot{text-align:center;padding:48px 0 max(56px,env(safe-area-inset-bottom));font-family:var(--label);font-size:12px;letter-spacing:.2em;color:var(--faint)}
+</style>
+</head>
+<body>
+
+<nav class="topnav" aria-label="Menu">
+  <a href="./">HOME</a>
+  <a href="rsvp.html">RSVP</a>
+</nav>
+
+<main class="wrap">
+  <header class="head">
+    <span class="hand">for hosts only</span>
+    <h1>Guest List</h1>
+  </header>
+
+  <!-- loading -->
+  <section class="card center" id="v-loading"><p>불러오는 중…</p></section>
+
+  <!-- signed out -->
+  <section class="card center" id="v-login" hidden>
+    <p>관리자 전용 페이지예요.<br>등록된 구글 계정으로 로그인해 주세요.</p>
+    <button class="btn" id="login-btn" type="button">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+      Google로 로그인
+    </button>
+    <div class="warn" id="inapp" hidden>카카오톡·인스타그램 안에서 열면 구글 로그인이 막혀요. 오른쪽 위 메뉴에서 <b>Safari / Chrome으로 열기</b>를 눌러주세요.</div>
+    <p class="err" id="login-err" role="status"></p>
+  </section>
+
+  <!-- not an admin -->
+  <section class="card center" id="v-denied" hidden>
+    <p><b id="denied-email"></b><br>이 계정은 관리자로 등록되어 있지 않아요.<br>주최자에게 이 이메일을 알려주세요.</p>
+    <p style="margin-top:16px"><button class="link" id="logout-1" type="button">다른 계정으로 로그인</button></p>
+  </section>
+
+  <!-- dashboard -->
+  <section id="v-list" hidden>
+    <div class="bar"><span id="me"></span><button class="link" id="logout-2" type="button">로그아웃</button></div>
+    <div class="stats">
+      <button class="stat" type="button" data-f="yes"><i>🙌</i><b id="n-yes">0</b><span>YES</span></button>
+      <button class="stat" type="button" data-f="maybe"><i>🤔</i><b id="n-maybe">0</b><span>MAYBE</span></button>
+      <button class="stat" type="button" data-f="no"><i>😢</i><b id="n-no">0</b><span>NO</span></button>
+    </div>
+    <button class="link all" id="show-all" type="button" hidden>전체 보기</button>
+    <ul class="guests" id="guests"></ul>
+    <p class="empty" id="empty" hidden>아직 응답이 없어요.</p>
+  </section>
+</main>
+
+<footer class="foot">FRIENDSGIVING · 11.26.2026</footer>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey: "AIzaSyA1AO-E83s-nPwwtFOs_sjRbrajU-DaPvM",
+  authDomain: "friendsgiving-e4f59.firebaseapp.com",
+  projectId: "friendsgiving-e4f59",
+  storageBucket: "friendsgiving-e4f59.firebasestorage.app",
+  messagingSenderId: "901880044903",
+  appId: "1:901880044903:web:7844e1d68924cc150e63c2"
+};
+const V = "10.12.2";
+const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`);
+const au = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`);
+const fs = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`);
+const app = initializeApp(firebaseConfig);
+const auth = au.getAuth(app);
+const db = fs.getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+const views = ['v-loading', 'v-login', 'v-denied', 'v-list'];
+const show = (v) => views.forEach(id => $(id).hidden = id !== v);
+
+// In-app browsers (KakaoTalk, Instagram, …) block Google sign-in
+if (/KAKAOTALK|Instagram|FBAN|FBAV|Line\/|NAVER|DaumApps/i.test(navigator.userAgent)) $('inapp').hidden = false;
+
+$('login-btn').addEventListener('click', async () => {
+  $('login-err').textContent = ''; $('login-btn').disabled = true;
+  try { await au.signInWithPopup(auth, new au.GoogleAuthProvider()); }
+  catch (e) {
+    console.error(e);
+    if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request')
+      $('login-err').textContent = `로그인하지 못했어요. (${e.code || e.message})`;
+  } finally { $('login-btn').disabled = false; }
+});
+const logout = () => au.signOut(auth);
+$('logout-1').addEventListener('click', logout);
+$('logout-2').addEventListener('click', logout);
+
+// ── list ────────────────────────────────────────────────────
+const EMOJI = { yes: '🙌', maybe: '🤔', no: '😢' };
+const ORDER = { yes: 0, maybe: 1, no: 2 };
+let rows = [], filter = null, unsub = null;
+
+const ms = (t) => (t && typeof t.toMillis === 'function') ? t.toMillis() : 0;
+const fmt = (t) => {
+  const n = ms(t); if (!n) return '';
+  return new Date(n).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+};
+
+function render() {
+  ['yes', 'maybe', 'no'].forEach(k => $(`n-${k}`).textContent = rows.filter(r => r.attending === k).length);
+  document.querySelectorAll('.stat').forEach(b => b.classList.toggle('on', b.dataset.f === filter));
+  $('show-all').hidden = !filter;
+
+  const list = rows
+    .filter(r => !filter || r.attending === filter)
+    .sort((a, b) => (ORDER[a.attending] - ORDER[b.attending]) || (ms(a.createdAt) - ms(b.createdAt)));
+
+  $('guests').innerHTML = '';
+  list.forEach(r => {
+    const li = document.createElement('li');
+    const e = document.createElement('span'); e.className = 'e'; e.textContent = EMOJI[r.attending] || '•';
+    const body = document.createElement('div'); body.className = 'body';
+    const top = document.createElement('div'); top.className = 'top';
+    const b = document.createElement('b'); b.textContent = r.name; top.append(b);
+    if (r.attending === 'maybe' && r.eta) { const t = document.createElement('span'); t.className = 'eta'; t.textContent = `⏰ ${r.eta}`; top.append(t); }
+    body.append(top);
+    if (r.message) { const p = document.createElement('p'); p.textContent = r.message; body.append(p); }
+    const when = fmt(r.updatedAt);
+    if (when) { const tm = document.createElement('time'); tm.textContent = `${when} 응답`; body.append(tm); }
+    li.append(e, body); $('guests').append(li);
+  });
+  $('empty').hidden = list.length > 0;
+  $('empty').textContent = filter ? '해당하는 사람이 없어요.' : '아직 응답이 없어요.';
+}
+
+document.querySelectorAll('.stat').forEach(b => b.addEventListener('click', () => {
+  filter = filter === b.dataset.f ? null : b.dataset.f; render();
+}));
+$('show-all').addEventListener('click', () => { filter = null; render(); });
+
+// ── auth state ──────────────────────────────────────────────
+au.onAuthStateChanged(auth, async (user) => {
+  if (unsub) { unsub(); unsub = null; }
+  if (!user) { show('v-login'); return; }
+  show('v-loading');
+  const email = (user.email || '').toLowerCase();
+  try {
+    const adminDoc = await fs.getDoc(fs.doc(db, 'admins', email));
+    if (!adminDoc.exists()) { $('denied-email').textContent = email; show('v-denied'); return; }
+  } catch (e) {
+    console.error(e); $('denied-email').textContent = email; show('v-denied'); return;
+  }
+  $('me').textContent = email;
+  show('v-list');
+  unsub = fs.onSnapshot(fs.collection(db, 'rsvps'),
+    (snap) => { rows = snap.docs.map(d => d.data()); render(); },
+    (err) => { console.error(err); $('denied-email').textContent = email; show('v-denied'); });
+});
+</script>
+</body>
+</html>
