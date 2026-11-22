@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1b1009">
 <title>Friendsgiving Potluck Party</title>
 <meta name="description" content="11/26 Thursday · 1 PM · Salt Apartment Community — 음식 하나, 포장한 선물 하나 챙겨서 와 주세요!">
 <!-- 링크 미리보기(썸네일). 저장소 이름이 friendsgiving이 아니면 아래 friendsgiving 부분(3군데)을 바꿔주세요 -->
@@ -49,11 +50,11 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;min-width:0}
   [hidden]{display:none!important}
-  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;background:var(--bg)}
   body{
     background:var(--bg);color:var(--ink);font:16px/1.7 var(--kr);
     overflow-x:clip;-webkit-font-smoothing:antialiased;
-    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   body::before{
     content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -87,11 +88,15 @@
   .head-ico{width:52px;height:52px;margin:0 auto 8px;display:block}
 
   /* hero */
-  .hero{position:relative;text-align:center;overflow:hidden;padding:clamp(56px,14vw,84px) 0 clamp(36px,9vw,56px)}
-  .hero-bg{position:absolute;inset:0;z-index:0;background:url("table.png") center 60%/cover no-repeat}
+  .hero{position:relative;text-align:center;overflow:hidden;padding:calc(clamp(56px,14vw,84px) + env(safe-area-inset-top)) 0 clamp(56px,14vw,84px)}
+  .hero-bg{
+    position:absolute;inset:0;z-index:0;background:url("table.png") center 60%/cover no-repeat;
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 55%,rgba(0,0,0,.5) 78%,transparent 100%);
+    mask-image:linear-gradient(180deg,#000 0%,#000 55%,rgba(0,0,0,.5) 78%,transparent 100%);
+  }
   .hero-bg::after{
     content:"";position:absolute;inset:0;
-    background:linear-gradient(180deg, rgba(27,16,9,.96) 0%, rgba(27,16,9,.80) 38%, rgba(27,16,9,.55) 64%, rgba(27,16,9,.92) 90%, var(--bg) 100%);
+    background:linear-gradient(180deg, rgba(27,16,9,.82) 0%, rgba(27,16,9,.72) 30%, rgba(27,16,9,.55) 62%, rgba(27,16,9,.75) 100%);
   }
   .hero .wrap{display:flex;flex-direction:column;align-items:center}
   .bow{width:84px;height:auto;color:var(--pumpkin);margin-bottom:4px}
