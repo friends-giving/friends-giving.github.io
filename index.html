@@ -168,6 +168,38 @@
   .special span{display:block;font-size:12.5px;color:var(--soft);line-height:1.45;margin-top:3px;word-break:keep-all}
   .rules-end{text-align:center;margin-top:18px;font-family:var(--hand);font-size:21px;color:var(--gold);line-height:1.35;word-break:keep-all}
 
+  /* top nav */
+  .topnav{
+    position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 12px);
+    display:flex;gap:2px;padding:4px;border-radius:999px;
+    background:rgba(27,16,9,.62);border:1px solid var(--line);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
+  .topnav a{font-family:var(--label);font-weight:500;font-size:12.5px;letter-spacing:.14em;color:var(--soft);text-decoration:none;padding:6px 13px;border-radius:999px;line-height:1.2;transition:color .2s,background .2s}
+  .topnav a:hover{color:var(--ink)}
+  .topnav a.on{background:var(--pumpkin);color:var(--bg)}
+
+  /* rsvp */
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+    font-family:var(--label);font-weight:500;font-size:16px;letter-spacing:.12em;
+    color:var(--bg);background:var(--pumpkin);padding:13px 30px;border-radius:999px;
+    box-shadow:0 8px 26px rgba(236,138,72,.32);transition:transform .2s,box-shadow .2s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(236,138,72,.42)}
+  .map-link{
+    display:inline-flex;align-items:center;gap:6px;margin-top:12px;
+    font-size:14.5px;color:var(--gold);text-decoration:none;
+    padding:5px 14px 5px 10px;border-radius:999px;border:1px solid rgba(234,187,110,.45);
+    background:rgba(27,16,9,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+    transition:background .2s,color .2s;
+  }
+  .map-link:hover{background:rgba(234,187,110,.14);color:var(--ink)}
+  .map-link svg{width:16px;height:16px;color:var(--cran)}
+  .hero .btn{margin-top:clamp(38px,10vw,50px)}
+  .rsvp{padding:26px 22px;text-align:center}
+  .rsvp p{font-size:16px;color:var(--soft);line-height:1.8;word-break:keep-all;text-wrap:balance;margin-bottom:20px}
+
   /* footer */
   .footer{text-align:center;padding:clamp(64px,16vw,100px) 0 max(64px,env(safe-area-inset-bottom))}
   .footer .pumpkins{margin:0 auto}
@@ -217,7 +249,12 @@
 <div class="leaves" aria-hidden="true" id="leaves"></div>
 
 <!-- HERO -->
-<header class="hero">
+<nav class="topnav" aria-label="Menu">
+  <a href="./" class="on">HOME</a>
+  <a href="rsvp.html">RSVP</a>
+</nav>
+
+<header class="hero" id="top">
   <div class="hero-bg" aria-hidden="true"></div>
   <div class="wrap">
     <svg class="bow" viewBox="0 0 120 34" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
@@ -240,6 +277,13 @@
       <b>11/26 THU · 1 PM</b>
       <span>Salt Apartment Community</span>
     </div>
+
+    <a class="map-link" href="https://maps.app.goo.gl/sKBAXMWHWazkbbZw6" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.6 7-12.2A7 7 0 0 0 5 9.8C5 15.4 12 22 12 22z" fill="currentColor"/><circle cx="12" cy="9.6" r="2.6" fill="#1b1009"/></svg>
+      Google Maps
+    </a>
+
+    <a class="btn" href="rsvp.html">RSVP</a>
 
   </div>
 </header>
@@ -330,6 +374,18 @@
     <p>본인 집에 가지고 있지만 잘 사용하지 않는 물건을 서로 교환하는 게 목적이에요.<br>비싼 선물을 새로 살 필요 없어요 🙅‍♀️</p>
   </div>
 
+</section>
+
+<!-- RSVP -->
+<section class="wrap" id="rsvp">
+  <div class="head pop">
+    <span class="hand">Will you join us?</span>
+    <h2>RSVP</h2>
+  </div>
+  <div class="rsvp card pop">
+    <p>올 수 있는지 미리 알려주세요!<br>준비할 자리와 선물 개수를 맞춰둘게요.</p>
+    <a class="btn" href="rsvp.html">RSVP 하러 가기 →</a>
+  </div>
 </section>
 
 <!-- FOOTER -->

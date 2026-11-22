@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>RSVP · Friendsgiving</title>
+<meta name="description" content="Friendsgiving Potluck Party RSVP — 11/26 Thursday · 1 PM · Salt Apartment Community">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://friends-giving.github.io/rsvp.html">
+<meta property="og:title" content="RSVP · Friendsgiving Potluck Party!">
+<meta property="og:description" content="11/26 Thursday · 1 PM · Salt Apartment Community">
+<meta property="og:image" content="https://friends-giving.github.io/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://friends-giving.github.io/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Jost:wght@400;500&family=Gaegu:wght@700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#1b1009;
+    --card:rgba(246,232,207,.055);
+    --card-2:rgba(233,137,74,.10);
+    --ink:#f6e8cf;
+    --soft:rgba(246,232,207,.70);
+    --faint:rgba(246,232,207,.40);
+    --pumpkin:#ec8a48;
+    --gold:#eabb6e;
+    --cran:#e0786b;
+    --leaf:#a9b36c;
+    --line:rgba(234,187,110,.30);
+    --serif:'Fraunces', Georgia, serif;
+    --hand:'Gaegu', 'Gowun Dodum', cursive;
+    --kr:'Gowun Dodum', sans-serif;
+    --label:'Jost', 'Gowun Dodum', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;min-width:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--ink);font:16px/1.7 var(--kr);min-height:100vh;
+    overflow-x:clip;-webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgba(236,138,72,.13), transparent 55%),
+      radial-gradient(90% 60% at 50% 110%, rgba(234,187,110,.08), transparent 60%);
+  }
+  .wrap{position:relative;z-index:2;max-width:520px;margin:0 auto;padding-left:clamp(18px,5.5vw,28px);padding-right:clamp(18px,5.5vw,28px)}
+  [hidden]{display:none!important}
+
+  /* falling leaves */
+  .leaves{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  .leaves svg{position:absolute;top:-30px;opacity:.4;animation:fall linear infinite}
+  @keyframes fall{
+    0%{transform:translate(0,-30px) rotate(0)}
+    50%{transform:translate(24px,50vh) rotate(170deg)}
+    100%{transform:translate(-10px,105vh) rotate(340deg)}
+  }
+
+  /* top nav */
+  .topnav{
+    position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 12px);
+    display:flex;gap:2px;padding:4px;border-radius:999px;
+    background:rgba(27,16,9,.62);border:1px solid var(--line);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
+  .topnav a{font-family:var(--label);font-weight:500;font-size:12.5px;letter-spacing:.14em;color:var(--soft);text-decoration:none;padding:6px 13px;border-radius:999px;line-height:1.2;transition:color .2s,background .2s}
+  .topnav a:hover{color:var(--ink)}
+  .topnav a.on{background:var(--pumpkin);color:var(--bg)}
+
+  /* head */
+  .head{text-align:center;padding-top:clamp(84px,20vw,112px);margin-bottom:26px}
+  .head .hand{display:block;font-family:var(--hand);font-size:22px;color:var(--gold);line-height:1.2}
+  .head h1{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:clamp(52px,15vw,76px);line-height:1;margin-top:6px}
+  .head .when{display:inline-block;margin-top:14px;font-family:var(--label);font-size:13px;letter-spacing:.12em;color:var(--soft);padding:6px 14px;border:1px solid var(--line);border-radius:999px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 20px}
+  .card + .card{margin-top:14px}
+  .card-title{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:24px;line-height:1.2;text-align:center}
+  .card-sub{text-align:center;font-size:14.5px;color:var(--soft);margin-top:6px;word-break:keep-all;text-wrap:balance}
+
+  /* fields */
+  .field{margin-top:20px}
+  .field > label,.field > .label{display:block;font-family:var(--label);font-weight:500;font-size:12.5px;letter-spacing:.14em;color:var(--gold);margin-bottom:8px}
+  .field .opt{color:var(--faint);letter-spacing:.04em;font-weight:400}
+  .input{
+    width:100%;font:inherit;font-size:17px;color:var(--ink);
+    background:rgba(27,16,9,.55);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;
+    outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .input::placeholder{color:var(--faint)}
+  .input:focus{border-color:var(--pumpkin);box-shadow:0 0 0 3px rgba(236,138,72,.18)}
+  textarea.input{resize:vertical;min-height:84px;line-height:1.6}
+  .hint{font-size:13px;color:var(--faint);margin-top:8px;word-break:keep-all}
+
+  /* PIN boxes */
+  .pin{display:flex;gap:10px;justify-content:center}
+  .pin input{
+    width:56px;height:62px;text-align:center;font-family:var(--serif);font-weight:600;font-size:28px;color:var(--ink);
+    background:rgba(27,16,9,.55);border:1.5px solid var(--line);border-radius:14px;outline:none;
+    -webkit-text-security:disc;caret-color:var(--pumpkin);transition:border-color .2s,box-shadow .2s;
+  }
+  .pin input:focus{border-color:var(--pumpkin);box-shadow:0 0 0 3px rgba(236,138,72,.18)}
+  .pin.shake{animation:shake .4s}
+  @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+  /* attending choice */
+  .choice{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .choice input{position:absolute;opacity:0;pointer-events:none}
+  .choice label{
+    display:block;text-align:center;cursor:pointer;padding:12px 4px 10px;border-radius:14px;
+    border:1.5px solid var(--line);background:rgba(27,16,9,.45);transition:border-color .2s,background .2s,transform .15s;
+  }
+  .choice label:hover{transform:translateY(-1px)}
+  .choice i{display:block;font-style:normal;font-size:24px;line-height:1.2}
+  .choice b{display:block;font-family:var(--label);font-weight:500;font-size:14px;letter-spacing:.08em;margin-top:4px}
+  .choice span{display:block;font-size:12.5px;color:var(--soft);line-height:1.4}
+  .choice input:checked + label{border-color:var(--pumpkin);background:var(--card-2)}
+  .choice input:focus-visible + label{box-shadow:0 0 0 3px rgba(236,138,72,.25)}
+
+  /* buttons */
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:24px;cursor:pointer;
+    font-family:var(--label);font-weight:500;font-size:16px;letter-spacing:.12em;
+    color:var(--bg);background:var(--pumpkin);border:0;padding:14px 20px;border-radius:999px;
+    box-shadow:0 8px 26px rgba(236,138,72,.30);transition:transform .2s,box-shadow .2s,opacity .2s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(236,138,72,.40)}
+  .btn:disabled{opacity:.55;cursor:default;transform:none}
+  .btn-ghost{
+    display:block;margin:14px auto 0;background:none;border:0;cursor:pointer;
+    font:inherit;font-size:14px;color:var(--soft);text-decoration:underline;text-underline-offset:3px;
+  }
+  .btn-ghost:hover{color:var(--ink)}
+
+  .msg{margin-top:14px;text-align:center;font-size:14.5px;line-height:1.6;word-break:keep-all}
+  .msg.err{color:var(--cran)}
+  .msg.ok{color:var(--leaf)}
+  .welcome{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:15px;color:var(--soft);margin-top:4px}
+  .welcome b{color:var(--ink);font-weight:400}
+
+  /* done */
+  .done{text-align:center}
+  .done .big{font-size:46px;line-height:1.1}
+  .done h2{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:30px;line-height:1.15;margin-top:8px}
+  .done p{font-size:15.5px;color:var(--soft);margin-top:8px;word-break:keep-all;text-wrap:balance}
+
+
+  .demo{margin-top:14px;text-align:center;font-size:12.5px;color:var(--faint);word-break:keep-all}
+  .foot{text-align:center;padding:48px 0 max(56px,env(safe-area-inset-bottom));font-family:var(--label);font-size:12px;letter-spacing:.2em;color:var(--faint)}
+
+  @media (max-width:360px){
+    .pin input{width:50px;height:56px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .leaves{display:none}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="leaf" viewBox="0 0 24 24">
+      <path d="M12 2c6 5 7 13 0 20C5 15 6 7 12 2z" fill="currentColor"/>
+      <path d="M12 6v16" stroke="rgba(0,0,0,.25)" stroke-width="1.2" fill="none"/>
+    </symbol>
+  </defs>
+</svg>
+<div class="leaves" aria-hidden="true" id="leaves"></div>
+
+<nav class="topnav" aria-label="Menu">
+  <a href="./">HOME</a>
+  <a href="rsvp.html" class="on">RSVP</a>
+</nav>
+
+<main class="wrap">
+  <header class="head">
+    <span class="hand">Will you join us?</span>
+    <h1>RSVP</h1>
+    <span class="when">11/26 THU · 1 PM · SALT APARTMENT</span>
+  </header>
+
+  <!-- STEP 1: name + PIN -->
+  <form class="card" id="step-auth" autocomplete="off" novalidate>
+    <h2 class="card-title">Hello there!</h2>
+    <p class="card-sub">이름과 4자리 비밀번호를 입력해 주세요.<br>나중에 응답을 수정할 때 같은 비밀번호를 쓰면 돼요.</p>
+
+    <div class="field">
+      <label for="name">NAME</label>
+      <input class="input" id="name" maxlength="20" placeholder="이름" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <span class="label" id="pin-label">4-DIGIT PIN</span>
+      <div class="pin" id="pin" role="group" aria-labelledby="pin-label">
+        <input inputmode="numeric" maxlength="1" aria-label="비밀번호 1번째 자리">
+        <input inputmode="numeric" maxlength="1" aria-label="비밀번호 2번째 자리">
+        <input inputmode="numeric" maxlength="1" aria-label="비밀번호 3번째 자리">
+        <input inputmode="numeric" maxlength="1" aria-label="비밀번호 4번째 자리">
+      </div>
+      <p class="hint" style="text-align:center">처음이면 지금 정한 숫자가 내 비밀번호가 돼요.</p>
+    </div>
+
+    <button class="btn" type="submit" id="auth-btn">NEXT →</button>
+    <p class="msg" id="auth-msg" role="status"></p>
+  </form>
+
+  <!-- STEP 2: answer -->
+  <form class="card" id="step-form" hidden novalidate>
+    <h2 class="card-title" id="form-title">Can you make it?</h2>
+    <p class="welcome" id="form-welcome"></p>
+
+    <div class="field">
+      <span class="label">ATTENDING</span>
+      <div class="choice" role="radiogroup">
+        <input type="radio" name="attending" id="a-yes" value="yes"><label for="a-yes"><i>🙌</i><b>YES</b><span>갈게요!</span></label>
+        <input type="radio" name="attending" id="a-maybe" value="maybe"><label for="a-maybe"><i>🤔</i><b>MAYBE</b><span>아직 몰라요</span></label>
+        <input type="radio" name="attending" id="a-no" value="no"><label for="a-no"><i>😢</i><b>NO</b><span>못 가요</span></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="message">MESSAGE <span class="opt">(선택)</span></label>
+      <textarea class="input" id="message" maxlength="150" placeholder="하고 싶은 말 한마디!"></textarea>
+    </div>
+
+    <button class="btn" type="submit" id="save-btn">SEND RSVP</button>
+    <p class="msg" id="form-msg" role="status"></p>
+    <button class="btn-ghost" type="button" id="back-btn">← 다른 이름으로</button>
+  </form>
+
+  <!-- STEP 3: done -->
+  <section class="card done" id="step-done" hidden>
+    <div class="big" id="done-emoji">🎉</div>
+    <h2 id="done-title">See you there!</h2>
+    <p id="done-text"></p>
+    <button class="btn-ghost" type="button" id="edit-btn">응답 수정하기</button>
+  </section>
+
+  <p class="demo" id="demo" hidden>⚠️ 데모 모드 — Firebase 설정 전이라 응답이 이 브라우저에만 저장돼요.</p>
+</main>
+
+<footer class="foot">FRIENDSGIVING · 11.26.2026</footer>
+
+<script type="module">
+// ─────────────────────────────────────────────────────────────
+// Firebase 설정: Firebase 콘솔 → 프로젝트 설정 → 내 앱(웹)에서 복사해 붙여넣으세요.
+// apiKey가 비어 있으면 데모 모드(이 브라우저 localStorage에만 저장)로 동작해요.
+// ─────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyA1AO-E83s-nPwwtFOs_sjRbrajU-DaPvM",
+  authDomain: "friendsgiving-e4f59.firebaseapp.com",
+  projectId: "friendsgiving-e4f59",
+  storageBucket: "friendsgiving-e4f59.firebasestorage.app",
+  messagingSenderId: "901880044903",
+  appId: "1:901880044903:web:7844e1d68924cc150e63c2"
+};
+const COLLECTION = "rsvps";
+
+// ── storage backends ────────────────────────────────────────
+async function makeStore() {
+  if (firebaseConfig.apiKey) {
+    const V = "10.12.2";
+    const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`);
+    const fs = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`);
+    const db = fs.getFirestore(initializeApp(firebaseConfig));
+    return {
+      async get(id) { const s = await fs.getDoc(fs.doc(db, COLLECTION, id)); return s.exists() ? s.data() : null; },
+      async save(id, data, isNew) {
+        const payload = { ...data, updatedAt: fs.serverTimestamp() };
+        if (isNew) payload.createdAt = fs.serverTimestamp();
+        await fs.setDoc(fs.doc(db, COLLECTION, id), payload, { merge: true });
+      },
+    };
+  }
+  document.getElementById('demo').hidden = false;
+  const KEY = 'friendsgiving-rsvp-demo';
+  const read = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
+  const write = (all) => { try { localStorage.setItem(KEY, JSON.stringify(all)); } catch {} };
+  return {
+    async get(id) { return read()[id] || null; },
+    async save(id, data, isNew) {
+      const all = read(); const now = Date.now();
+      all[id] = { ...(all[id] || {}), ...data, updatedAt: now, ...(isNew ? { createdAt: now } : {}) };
+      write(all);
+    },
+  };
+}
+
+// ── helpers ─────────────────────────────────────────────────
+const $ = (id) => document.getElementById(id);
+const cleanName = (s) => s.trim().replace(/\s+/g, ' ');
+const nameKey = (s) => cleanName(s).toLowerCase().replace(/[\/.#$\[\]]/g, '_');
+async function hashPin(key, pin) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`friendsgiving:${key}:${pin}`));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const show = (step) => ['step-auth', 'step-form', 'step-done'].forEach(id => $(id).hidden = id !== step);
+const setMsg = (el, text, kind = 'err') => { el.textContent = text; el.className = `msg ${text ? kind : ''}`; };
+
+// ── PIN boxes ───────────────────────────────────────────────
+const pinBoxes = [...document.querySelectorAll('#pin input')];
+pinBoxes.forEach((box, i) => {
+  box.addEventListener('input', () => {
+    const digits = box.value.replace(/\D/g, '');
+    if (digits.length > 1) {               // pasted several digits
+      digits.slice(0, 4 - i).split('').forEach((d, j) => pinBoxes[i + j].value = d);
+      pinBoxes[Math.min(i + digits.length, 3)].focus();
+      return;
+    }
+    box.value = digits;
+    if (digits && i < 3) pinBoxes[i + 1].focus();
+  });
+  box.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !box.value && i > 0) { pinBoxes[i - 1].focus(); pinBoxes[i - 1].value = ''; e.preventDefault(); }
+    if (e.key === 'ArrowLeft' && i > 0) pinBoxes[i - 1].focus();
+    if (e.key === 'ArrowRight' && i < 3) pinBoxes[i + 1].focus();
+  });
+  box.addEventListener('focus', () => box.select());
+});
+const getPin = () => pinBoxes.map(b => b.value).join('');
+const shakePin = () => { const p = $('pin'); p.classList.remove('shake'); void p.offsetWidth; p.classList.add('shake'); };
+
+// ── state ───────────────────────────────────────────────────
+let store, current = null; // { id, name, pinHash, isNew, data }
+
+
+function fillForm() {
+  const d = current.data || {};
+  $('form-title').textContent = current.isNew ? 'Can you make it?' : 'Welcome back!';
+  $('form-welcome').innerHTML = '';
+  const w = document.createElement('b'); w.textContent = current.name;
+  $('form-welcome').append(w, document.createTextNode(current.isNew ? ' 님, 반가워요!' : ' 님, 응답을 수정할 수 있어요.'));
+  document.querySelectorAll('input[name=attending]').forEach(r => r.checked = r.value === d.attending);
+  $('message').value = d.message || '';
+  setMsg($('form-msg'), '');
+}
+
+function showDone() {
+  const a = current.data.attending;
+  const copy = {
+    yes:   ['🎉', 'See you there!', '11/26 목요일 오후 1시에 만나요! 음식 하나, 포장한 선물 하나 잊지 마세요.'],
+    maybe: ['🤞', 'Hope you can make it!', '확정되면 같은 이름과 비밀번호로 다시 들어와서 바꿔주세요.'],
+    no:    ['🥲', "We'll miss you!", '아쉽지만 다음에 꼭 같이해요. 혹시 일정이 바뀌면 수정해 주세요!']
+  }[a];
+  $('done-emoji').textContent = copy[0];
+  $('done-title').textContent = copy[1];
+  $('done-text').textContent = copy[2];
+  show('step-done');
+}
+
+// ── step 1 ──────────────────────────────────────────────────
+$('step-auth').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('auth-msg');
+  const name = cleanName($('name').value);
+  const pin = getPin();
+  if (!name) { setMsg(msg, '이름을 입력해 주세요.'); $('name').focus(); return; }
+  if (!/^\d{4}$/.test(pin)) { setMsg(msg, '비밀번호 숫자 4자리를 입력해 주세요.'); shakePin(); return; }
+
+  const btn = $('auth-btn'); btn.disabled = true; setMsg(msg, '');
+  try {
+    const id = nameKey(name);
+    const pinHash = await hashPin(id, pin);
+    const existing = await store.get(id);
+    if (existing && existing.pinHash !== pinHash) {
+      setMsg(msg, '이미 등록된 이름이에요. 비밀번호가 맞는지 확인해 주세요!');
+      shakePin(); pinBoxes.forEach(b => b.value = ''); pinBoxes[0].focus();
+      return;
+    }
+    current = { id, name: existing ? existing.name : name, pinHash, isNew: !existing, data: existing };
+    fillForm(); show('step-form');
+  } catch (err) {
+    console.error(err); setMsg(msg, '연결에 문제가 생겼어요. 잠시 후 다시 시도해 주세요.');
+  } finally { btn.disabled = false; }
+});
+
+// ── step 2 ──────────────────────────────────────────────────
+$('step-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('form-msg');
+  const attending = document.querySelector('input[name=attending]:checked')?.value;
+  if (!attending) { setMsg(msg, '참석 여부를 골라주세요!'); return; }
+  const data = { name: current.name, pinHash: current.pinHash, attending, message: $('message').value.trim().slice(0, 150) };
+
+  const btn = $('save-btn'); btn.disabled = true; setMsg(msg, '');
+  try {
+    await store.save(current.id, data, current.isNew);
+    current.data = { ...(current.data || {}), ...data }; current.isNew = false;
+    showDone();
+  } catch (err) {
+    console.error(err); setMsg(msg, '저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+  } finally { btn.disabled = false; }
+});
+
+$('back-btn').addEventListener('click', () => {
+  current = null; $('name').value = ''; pinBoxes.forEach(b => b.value = '');
+  setMsg($('auth-msg'), ''); show('step-auth'); $('name').focus();
+});
+$('edit-btn').addEventListener('click', () => { fillForm(); show('step-form'); });
+
+// ── leaves ──────────────────────────────────────────────────
+const colors = ['#ec8a48', '#e0786b', '#eabb6e', '#a9b36c'];
+$('leaves').innerHTML = Array.from({ length: 5 }, (_, i) => {
+  const left = (i * 21 + 8) % 100, dur = 15 + (i * 3) % 8, delay = -(i * 3.4), size = 14 + (i * 4) % 8;
+  return `<svg style="left:${left}%;width:${size}px;height:${size}px;color:${colors[i % 4]};animation-duration:${dur}s;animation-delay:${delay}s"><use href="#leaf"/></svg>`;
+}).join('');
+
+// ── boot ────────────────────────────────────────────────────
+try { store = await makeStore(); }
+catch (err) { console.error(err); setMsg($('auth-msg'), 'Firebase에 연결하지 못했어요. 설정을 확인해 주세요.'); }
+</script>
+</body>
+</html>
