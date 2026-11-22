@@ -120,6 +120,16 @@
   .choice input:checked + label{border-color:var(--pumpkin);background:var(--card-2)}
   .choice input:focus-visible + label{box-shadow:0 0 0 3px rgba(236,138,72,.25)}
 
+  /* ETA chips (maybe only) */
+  .eta{padding:16px 14px 14px;border-radius:16px;border:1.5px dashed rgba(234,187,110,.5);background:rgba(234,187,110,.06)}
+  .eta .q{font-size:15px;line-height:1.5;word-break:keep-all}
+  .eta .q small{display:block;font-size:13px;color:var(--soft)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chips input{position:absolute;opacity:0;pointer-events:none}
+  .chips label{cursor:pointer;font-size:14.5px;padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);background:rgba(27,16,9,.5);transition:border-color .2s,background .2s;white-space:nowrap}
+  .chips input:checked + label{border-color:var(--pumpkin);background:var(--card-2);color:var(--ink)}
+  .chips input:focus-visible + label{box-shadow:0 0 0 3px rgba(236,138,72,.25)}
+
   /* buttons */
   .btn{
     display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:24px;cursor:pointer;
@@ -220,6 +230,17 @@
         <input type="radio" name="attending" id="a-yes" value="yes"><label for="a-yes"><i>🙌</i><b>YES</b><span>갈게요!</span></label>
         <input type="radio" name="attending" id="a-maybe" value="maybe"><label for="a-maybe"><i>🤔</i><b>MAYBE</b><span>아직 몰라요</span></label>
         <input type="radio" name="attending" id="a-no" value="no"><label for="a-no"><i>😢</i><b>NO</b><span>못 가요</span></label>
+      </div>
+    </div>
+
+    <div class="field eta" id="eta-field" hidden>
+      <p class="q">오게 된다면 몇 시쯤 도착할 것 같아요?<small>파티는 1시에 시작해요!</small></p>
+      <div class="chips" role="radiogroup" aria-label="도착 예정 시간">
+        <input type="radio" name="eta" id="eta-1" value="1시"><label for="eta-1">1시</label>
+        <input type="radio" name="eta" id="eta-2" value="2시쯤"><label for="eta-2">2시쯤</label>
+        <input type="radio" name="eta" id="eta-3" value="3시쯤"><label for="eta-3">3시쯤</label>
+        <input type="radio" name="eta" id="eta-4" value="4시 이후"><label for="eta-4">4시 이후</label>
+        <input type="radio" name="eta" id="eta-x" value="아직 몰라요"><label for="eta-x">아직 몰라요</label>
       </div>
     </div>
 
@@ -336,6 +357,8 @@ function fillForm() {
   const w = document.createElement('b'); w.textContent = current.name;
   $('form-welcome').append(w, document.createTextNode(current.isNew ? ' 님, 반가워요!' : ' 님, 응답을 수정할 수 있어요.'));
   document.querySelectorAll('input[name=attending]').forEach(r => r.checked = r.value === d.attending);
+  document.querySelectorAll('input[name=eta]').forEach(r => r.checked = r.value === d.eta);
+  syncEta();
   $('message').value = d.message || '';
   setMsg($('form-msg'), '');
 }
@@ -344,7 +367,7 @@ function showDone() {
   const a = current.data.attending;
   const copy = {
     yes:   ['🎉', 'See you there!', '11/26 목요일 오후 1시에 만나요! 음식 하나, 포장한 선물 하나 잊지 마세요.'],
-    maybe: ['🤞', 'Hope you can make it!', '확정되면 같은 이름과 비밀번호로 다시 들어와서 바꿔주세요.'],
+    maybe: ['🤞', 'Hope you can make it!', `${current.data.eta && current.data.eta !== '아직 몰라요' ? current.data.eta + '에 볼 수 있길! ' : ''}확정되면 같은 이름과 비밀번호로 다시 들어와서 바꿔주세요.`],
     no:    ['🥲', "We'll miss you!", '아쉽지만 다음에 꼭 같이해요. 혹시 일정이 바뀌면 수정해 주세요!']
   }[a];
   $('done-emoji').textContent = copy[0];
@@ -352,6 +375,12 @@ function showDone() {
   $('done-text').textContent = copy[2];
   show('step-done');
 }
+
+// ── ETA shows only for "maybe" ──────────────────────────────
+function syncEta() {
+  $('eta-field').hidden = document.querySelector('input[name=attending]:checked')?.value !== 'maybe';
+}
+document.querySelectorAll('input[name=attending]').forEach(r => r.addEventListener('change', syncEta));
 
 // ── step 1 ──────────────────────────────────────────────────
 $('step-auth').addEventListener('submit', async (e) => {
@@ -385,7 +414,9 @@ $('step-form').addEventListener('submit', async (e) => {
   const msg = $('form-msg');
   const attending = document.querySelector('input[name=attending]:checked')?.value;
   if (!attending) { setMsg(msg, '참석 여부를 골라주세요!'); return; }
-  const data = { name: current.name, pinHash: current.pinHash, attending, message: $('message').value.trim().slice(0, 150) };
+  const eta = attending === 'maybe' ? document.querySelector('input[name=eta]:checked')?.value : '';
+  if (attending === 'maybe' && !eta) { setMsg(msg, '도착 예정 시간을 골라주세요!'); $('eta-field').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  const data = { name: current.name, pinHash: current.pinHash, attending, eta, message: $('message').value.trim().slice(0, 150) };
 
   const btn = $('save-btn'); btn.disabled = true; setMsg(msg, '');
   try {
