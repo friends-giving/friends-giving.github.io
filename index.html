@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Friendsgiving Potluck Party</title>
+<meta name="description" content="11/26 Thursday · 1 PM · Salt Apartment Community — 음식 하나, 포장한 선물 하나 챙겨서 와 주세요!">
+<!-- 링크 미리보기(썸네일). 저장소 이름이 friendsgiving이 아니면 아래 friendsgiving 부분(3군데)을 바꿔주세요 -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://friends-giving.github.io/friends-giving/">
+<meta property="og:title" content="Friendsgiving Potluck Party!">
+<meta property="og:description" content="11/26 Thursday · 1 PM · Salt Apartment Community">
+<meta property="og:image" content="https://friends-giving.github.io/friends-giving/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="촛불과 음식이 가득한 Friendsgiving 파티 테이블">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Friendsgiving Potluck Party!">
+<meta name="twitter:description" content="11/26 Thursday · 1 PM · Salt Apartment Community">
+<meta name="twitter:image" content="https://friends-giving.github.io/friends-giving/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Jost:wght@400;500&family=Gaegu:wght@700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  /*
+    VOICE   cozy and warm — elegant candlelight with a friendly wink
+    IDEA    the candlelit poster, softened: rounded cards, little pumpkins, the feast glowing behind
+    PICTURE feast photo glowing behind the hero, small pumpkin trio, gentle falling leaves
+    COLOUR  roasted-chestnut dark, cream ink, pumpkin, candle gold, a touch of cranberry
+    TYPE    Fraunces (soft) for titles, Gaegu for tiny hand notes, Gowun Dodum body, Jost labels
+  */
+  :root{
+    color-scheme:dark;
+    --bg:#1b1009;
+    --card:rgba(246,232,207,.055);
+    --card-2:rgba(233,137,74,.10);
+    --ink:#f6e8cf;
+    --soft:rgba(246,232,207,.70);
+    --faint:rgba(246,232,207,.40);
+    --pumpkin:#ec8a48;
+    --gold:#eabb6e;
+    --cran:#e0786b;
+    --leaf:#a9b36c;
+    --line:rgba(234,187,110,.30);
+    --serif:'Fraunces', Georgia, serif;
+    --hand:'Gaegu', 'Gowun Dodum', cursive;
+    --kr:'Gowun Dodum', sans-serif;
+    --label:'Jost', 'Gowun Dodum', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;min-width:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--ink);font:16px/1.7 var(--kr);
+    overflow-x:clip;-webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgba(236,138,72,.13), transparent 55%),
+      radial-gradient(90% 60% at 50% 110%, rgba(234,187,110,.08), transparent 60%);
+  }
+  .serif{font-family:var(--serif);font-variation-settings:"SOFT" 100}
+  .wrap{position:relative;z-index:2;max-width:520px;margin:0 auto;padding-left:clamp(18px,5.5vw,28px);padding-right:clamp(18px,5.5vw,28px)}
+  section{padding:clamp(64px,16vw,100px) 0 0}
+
+  /* falling leaves */
+  .leaves{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  .leaves svg{position:absolute;top:-30px;opacity:.45;animation:fall linear infinite}
+  @keyframes fall{
+    0%{transform:translate(0,-30px) rotate(0)}
+    50%{transform:translate(24px,50vh) rotate(170deg)}
+    100%{transform:translate(-10px,105vh) rotate(340deg)}
+  }
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px}
+  .pop{opacity:0;transform:translateY(20px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.8,.2,1)}
+  .pop.in{opacity:1;transform:none}
+
+  /* heads */
+  .head{text-align:center;margin-bottom:24px}
+  .head .hand{display:block;font-family:var(--hand);font-size:21px;color:var(--gold);line-height:1.2}
+  .head h2{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:clamp(34px,9.5vw,46px);line-height:1.05;margin-top:4px}
+  .head .sub{font-size:16px;color:var(--soft);margin-top:10px;word-break:keep-all}
+  .head .sub b{color:var(--gold);font-weight:400}
+  .head-ico{width:52px;height:52px;margin:0 auto 8px;display:block}
+
+  /* hero */
+  .hero{position:relative;text-align:center;overflow:hidden;padding:clamp(56px,14vw,84px) 0 clamp(36px,9vw,56px)}
+  .hero-bg{position:absolute;inset:0;z-index:0;background:url("table.png") center 60%/cover no-repeat}
+  .hero-bg::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(27,16,9,.96) 0%, rgba(27,16,9,.80) 38%, rgba(27,16,9,.55) 64%, rgba(27,16,9,.92) 90%, var(--bg) 100%);
+  }
+  .hero .wrap{display:flex;flex-direction:column;align-items:center}
+  .bow{width:84px;height:auto;color:var(--pumpkin);margin-bottom:4px}
+  .invited{font-family:var(--hand);font-size:22px;color:var(--gold);line-height:1.2}
+  .title{
+    font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;
+    font-size:clamp(52px,15vw,88px);line-height:1;letter-spacing:-.01em;margin-top:10px;
+    text-shadow:0 4px 28px rgba(0,0,0,.55);
+  }
+  .subtitle{
+    font-family:var(--serif);font-variation-settings:"SOFT" 100;font-weight:600;
+    font-size:clamp(24px,7vw,34px);line-height:1.2;margin-top:8px;color:var(--ink);
+  }
+  .swash{width:min(240px,66%);height:12px;color:var(--pumpkin);margin-top:4px}
+  .pumpkins{width:min(230px,64%);height:auto;margin-top:18px;display:block}
+  .ticket{
+    position:relative;margin-top:22px;padding:14px 28px;
+    border:1.5px solid rgba(246,232,207,.6);border-radius:16px;
+    background:rgba(27,16,9,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  }
+  .ticket::before,.ticket::after{
+    content:"";position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;
+    background:var(--bg);border:1.5px solid rgba(246,232,207,.6);
+  }
+  .ticket::before{left:-8px;clip-path:inset(0 0 0 50%)}
+  .ticket::after{right:-8px;clip-path:inset(0 50% 0 0)}
+  .ticket b{display:block;font-family:var(--label);font-weight:500;font-size:clamp(17px,5vw,21px);letter-spacing:.1em;white-space:nowrap}
+  .ticket span{display:block;font-family:var(--label);font-size:13px;letter-spacing:.08em;color:var(--soft);margin-top:2px}
+
+
+  /* potluck */
+  .potluck{padding:24px 22px 22px;text-align:center}
+  .lead{font-size:17px;line-height:1.85;word-break:keep-all;text-wrap:balance}
+  .lead mark{background:linear-gradient(transparent 62%, rgba(236,138,72,.45) 62%);color:inherit;padding:0 2px}
+  .vote{display:flex;align-items:center;gap:14px;text-align:left;margin-top:20px;padding:14px 16px;border-radius:16px;border:1.5px dashed rgba(234,187,110,.55);background:rgba(234,187,110,.07)}
+  .vote svg{flex:none;width:46px;height:46px}
+  .vote b{display:block;font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:21px;line-height:1.2}
+  .vote span{display:block;font-size:15px;color:var(--soft);word-break:keep-all}
+
+  /* white elephant */
+  .examples-label{display:block;text-align:center;margin-top:26px;font-family:var(--hand);font-size:22px;color:var(--gold)}
+  .gifts{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+  .gift{position:relative;padding:16px 14px 14px}
+  .gift-no{font-family:var(--serif);font-style:italic;font-weight:600;font-size:22px;color:var(--pumpkin);line-height:1}
+  .gift h3{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-weight:500;font-size:20px;margin-top:8px;line-height:1.25}
+  .gift p{font-size:14px;color:var(--soft);margin-top:4px;line-height:1.6;word-break:keep-all}
+  .stamp{
+    position:absolute;top:12px;right:12px;white-space:nowrap;
+    font-family:var(--hand);font-size:17px;line-height:1.3;color:var(--cran);
+    border:1.5px solid var(--cran);border-radius:8px;padding:0 7px;transform:rotate(8deg);
+  }
+  .note{
+    margin-top:22px;padding:20px;text-align:center;border-radius:20px;
+    background:rgba(169,179,108,.12);border:1px solid rgba(169,179,108,.45);
+  }
+  .note b{display:block;font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:21px;color:var(--leaf);line-height:1.3}
+  .note p{font-size:15.5px;margin-top:6px;line-height:1.75;word-break:keep-all;text-wrap:balance}
+
+  /* footer */
+  .footer{text-align:center;padding:clamp(64px,16vw,100px) 0 max(64px,env(safe-area-inset-bottom))}
+  .footer .pumpkins{margin:0 auto}
+  .footer h2{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:clamp(32px,9vw,44px);color:var(--gold);margin-top:16px;line-height:1.1}
+  .footer p{font-family:var(--hand);font-size:21px;color:var(--soft);margin-top:10px;word-break:keep-all;text-wrap:balance;line-height:1.4}
+  .footer small{display:block;font-family:var(--label);font-size:12px;letter-spacing:.2em;color:var(--faint);margin-top:24px}
+
+  @media (max-width:380px){
+    .gifts{grid-template-columns:minmax(0,1fr)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .pop{opacity:1;transform:none}
+    .leaves{display:none}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="pumpkin" viewBox="0 0 100 92">
+      <ellipse cx="30" cy="58" rx="22" ry="27" fill="#d9712f" stroke="#a9501f" stroke-width="2"/>
+      <ellipse cx="70" cy="58" rx="22" ry="27" fill="#d9712f" stroke="#a9501f" stroke-width="2"/>
+      <ellipse cx="50" cy="58" rx="25" ry="30" fill="#ec8a48" stroke="#a9501f" stroke-width="2"/>
+      <ellipse cx="40" cy="45" rx="4.5" ry="9" fill="#fff" opacity=".22"/>
+      <path d="M47 29c-1-10 3-17 9-20l4 4c-5 4-7 9-6 16z" fill="#7a5230"/>
+      <path d="M58 17c8-8 19-7 24 1-9 6-17 6-24-1z" fill="#a9b36c"/>
+    </symbol>
+    <symbol id="leaf" viewBox="0 0 24 24">
+      <path d="M12 2c6 5 7 13 0 20C5 15 6 7 12 2z" fill="currentColor"/>
+      <path d="M12 6v16" stroke="rgba(0,0,0,.25)" stroke-width="1.2" fill="none"/>
+    </symbol>
+    <symbol id="gift" viewBox="0 0 64 64">
+      <rect x="11" y="28" width="42" height="29" rx="4" fill="#c9554d"/>
+      <rect x="7" y="20" width="50" height="11" rx="3" fill="#dd6a5f"/>
+      <rect x="28.5" y="20" width="7" height="37" fill="#eabb6e"/>
+      <path d="M32 20c-8-12-20-8-16-2 3 4 10 3 16 2zM32 20c8-12 20-8 16-2-3 4-10 3-16 2z" fill="none" stroke="#eabb6e" stroke-width="3" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="leaves" aria-hidden="true" id="leaves"></div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <svg class="bow" viewBox="0 0 120 34" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+      <path d="M60 17c-10-14-30-16-32-6s20 9 32 6zM60 17c10-14 30-16 32-6s-20 9-32 6z"/>
+      <path d="M60 17c-6 4-12 10-16 15M60 17c6 4 12 10 16 15"/>
+      <circle cx="60" cy="17" r="2.6" fill="currentColor"/>
+    </svg>
+    <div class="invited">you're invited to</div>
+    <h1 class="title">Friendsgiving</h1>
+    <div class="subtitle">Potluck Party!</div>
+    <svg class="swash" viewBox="0 0 240 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 7c55-6 130-6 234-1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+
+    <svg class="pumpkins" viewBox="0 0 300 120" aria-hidden="true">
+      <use href="#pumpkin" x="14" y="44" width="84" height="74"/>
+      <use href="#pumpkin" x="96" y="6" width="114" height="106"/>
+      <use href="#pumpkin" x="208" y="52" width="76" height="66"/>
+    </svg>
+
+    <div class="ticket">
+      <b>11/26 THU · 1 PM</b>
+      <span>Salt Apartment Community</span>
+    </div>
+
+  </div>
+</header>
+
+<!-- POTLUCK -->
+<section class="wrap">
+  <div class="head pop">
+    <svg class="head-ico" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M8 36h48l-4 14a6 6 0 0 1-6 4H18a6 6 0 0 1-6-4z" fill="#eabb6e"/>
+      <path d="M8 36c2-12 12-18 24-18s22 6 24 18z" fill="#d9712f"/>
+      <path d="M20 28l4 4M30 24l2 5M42 27l-3 4" stroke="#f6e8cf" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M26 12c-2-3 2-5 0-8M36 12c-2-3 2-5 0-8" stroke="rgba(246,232,207,.5)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+    <span class="hand">음식 하나씩 들고 오기!</span>
+    <h2>Potluck Party!</h2>
+  </div>
+  <div class="potluck card pop">
+    <p class="lead">각자 <mark>음식 하나씩</mark> 가져와 주세요!<br>직접 만든 요리도, 좋아하는 가게 음식도 다 좋아요.</p>
+    <div class="vote">
+      <svg viewBox="0 0 54 54" aria-hidden="true">
+        <path d="M17 8h20v12a10 10 0 0 1-20 0z" fill="#eabb6e"/>
+        <path d="M17 12H10v3a7 7 0 0 0 7 7M37 12h7v3a7 7 0 0 1-7 7" fill="none" stroke="#eabb6e" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M27 30v8" stroke="#eabb6e" stroke-width="2.6"/>
+        <rect x="18" y="38" width="18" height="8" rx="2" fill="#c9554d"/>
+        <path d="M27 12l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="#1b1009"/>
+      </svg>
+      <div><b>Best Dish Vote</b><span>어떤 음식이 제일 좋은지 투표할 거예요!</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHITE ELEPHANT -->
+<section class="wrap">
+  <div class="head pop">
+    <svg class="head-ico" viewBox="0 0 64 64" aria-hidden="true"><use href="#gift"/></svg>
+    <span class="hand">Early Christmas Game!</span>
+    <h2>White Elephant</h2>
+    <p class="sub">집에서 안 쓰는 물건을 <b>포장해서</b> 가져와 주세요!</p>
+  </div>
+
+  <span class="examples-label pop">🎁 선물 예시 🎁</span>
+  <ul class="gifts">
+    <li class="gift card pop">
+      <span class="stamp">가능!</span>
+      <span class="gift-no">1</span>
+      <h3>양말</h3>
+      <p>12개 세트로 샀는데 2개 디자인이 마음에 안 들어서 클로젯에 있다…</p>
+    </li>
+    <li class="gift card pop">
+      <span class="stamp">가능!</span>
+      <span class="gift-no">2</span>
+      <h3>러닝 밴드</h3>
+      <p>샀는데… 러닝을 안 해서… 박스에 그대로 들어있다</p>
+    </li>
+    <li class="gift card pop">
+      <span class="stamp">가능!</span>
+      <span class="gift-no">3</span>
+      <h3>모델링 팩</h3>
+      <p>뜯어서 써봤는데 나랑 안 맞음</p>
+    </li>
+    <li class="gift card pop">
+      <span class="stamp">가능!</span>
+      <span class="gift-no">4</span>
+      <h3>복권</h3>
+      <p>당첨은 받는 사람 몫!</p>
+    </li>
+  </ul>
+
+  <div class="note pop">
+    <b>✨ 쓰레기 선물이 아니에요! ✨</b>
+    <p>본인 집에 가지고 있지만 잘 사용하지 않는 물건을 서로 교환하는 게 목적이에요.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer wrap pop">
+  <svg class="pumpkins" viewBox="0 0 300 120" aria-hidden="true">
+    <use href="#pumpkin" x="30" y="44" width="84" height="74"/>
+    <use href="#gift" x="114" y="34" width="80" height="80"/>
+    <use href="#pumpkin" x="196" y="52" width="76" height="66"/>
+  </svg>
+  <h2>See you at the table!</h2>
+  <p>맛있는 음식 하나, 포장한 선물 하나 챙겨서 와 주세요!</p>
+  <small>FRIENDSGIVING · 11.26.2026</small>
+</footer>
+
+<script>
+{
+  // Gentle falling leaves
+  const colors = ['#ec8a48','#e0786b','#eabb6e','#a9b36c'];
+  const leavesBox = document.getElementById('leaves');
+  leavesBox.innerHTML = Array.from({length:6}, (_, i) => {
+    const left = (i * 17 + 6) % 100;
+    const dur = 14 + (i * 3) % 8;
+    const delay = -(i * 3.1);
+    const size = 14 + (i * 4) % 8;
+    return `<svg style="left:${left}%;width:${size}px;height:${size}px;color:${colors[i % colors.length]};animation-duration:${dur}s;animation-delay:${delay}s"><use href="#leaf"/></svg>`;
+  }).join('');
+
+  // Fade-in on scroll
+  const popObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); popObserver.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.pop').forEach(n => popObserver.observe(n));
+}
+</script>
+</body>
+</html>
