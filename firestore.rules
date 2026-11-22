@@ -14,6 +14,69 @@ service cloud.firestore {
       allow list, write: if false;
     }
 
+    // ── Best Dish Vote ─────────────────────────────────────
+    // config/vote.phase: 'hidden'(비공개) → 'open'(등록+투표) → 'closed'(마감) → 'results'(결과 공개). 문서가 없으면 'hidden'.
+    // 결과 공개 때 관리자가 득표수(results)만 올려요. 누가 누구를 찍었는지는 관리자만 볼 수 있어요.
+    function votePhase() {
+      let p = /databases/$(database)/documents/config/vote;
+      return exists(p) ? get(p).data.phase : 'hidden';
+    }
+    // 이름(rsvp 문서 ID) + 비밀번호(pinHash)가 RSVP와 일치하는지
+    function isVoter(rsvpId, pinHash) {
+      let r = /databases/$(database)/documents/rsvps/$(rsvpId);
+      return rsvpId is string && exists(r) && get(r).data.pinHash == pinHash;
+    }
+
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if isAdmin() && doc == 'vote'
+        && request.resource.data.keys().hasOnly(['phase', 'results'])
+        && request.resource.data.phase in ['hidden', 'open', 'closed', 'results'];
+    }
+
+    match /dishes/{dishId} {
+      function validDish() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['name', 'chef', 'desc', 'emoji', 'createdBy', 'pinHash', 'createdAt', 'deleted'])
+          && (!('deleted' in d) || d.deleted is bool)
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 40
+          && d.chef is string && d.chef.size() > 0 && d.chef.size() <= 20
+          && d.desc is string && d.desc.size() <= 80
+          && d.emoji is string && d.emoji.size() <= 8;
+      }
+      allow read: if true;
+      allow create: if votePhase() == 'open' && validDish()
+        && isVoter(request.resource.data.createdBy, request.resource.data.pinHash)
+        && request.resource.data.createdAt == request.time;
+      // 등록한 사람만 수정·삭제 가능 (본인 삭제는 deleted: true 로 표시), 완전 삭제는 관리자만
+      allow update: if votePhase() == 'open' && validDish()
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        && isVoter(resource.data.createdBy, request.resource.data.pinHash);
+      allow delete: if isAdmin();
+    }
+
+    // 표: RSVP 1명당 1표, 마감 전까지 변경 가능 (관리자 집계에서 같은 사람의 표는 최신 1개만 셈)
+    match /votes/{voteKey} {
+      function validVote() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['voter', 'pinHash', 'dishId', 'updatedAt'])
+          && isVoter(d.voter, d.pinHash)
+          && d.dishId is string
+          && (d.dishId == ''   // '' = 투표 취소
+            || (exists(/databases/$(database)/documents/dishes/$(d.dishId))
+              && get(/databases/$(database)/documents/dishes/$(d.dishId)).data.get('deleted', false) == false))
+          && d.updatedAt == request.time;
+      }
+      allow get: if true;          // 문서 ID는 이름+비밀번호로만 만들 수 있어서 본인만 찾을 수 있어요
+      allow list: if isAdmin();
+      // 마감 전까지는 본인 표를 다른 음식으로 바꿀 수 있어요
+      allow create: if votePhase() == 'open' && validVote();
+      allow update: if votePhase() == 'open' && validVote()
+        && request.resource.data.voter == resource.data.voter;
+      allow delete: if false;
+    }
+
     match /rsvps/{id} {
       function validData() {
         let d = request.resource.data;

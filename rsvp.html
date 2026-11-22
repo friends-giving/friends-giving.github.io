@@ -69,6 +69,9 @@
   .topnav a{font-family:var(--label);font-weight:500;font-size:12.5px;letter-spacing:.14em;color:var(--soft);text-decoration:none;padding:6px 13px;border-radius:999px;line-height:1.2;transition:color .2s,background .2s}
   .topnav a:hover{color:var(--ink)}
   .topnav a.on{background:var(--pumpkin);color:var(--bg)}
+  .topnav a.live{position:relative;color:var(--ink)}
+  .topnav a.live::after{content:"";position:absolute;top:4px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--cran);box-shadow:0 0 0 0 rgba(224,120,107,.7);animation:navpulse 1.6s infinite}
+  @keyframes navpulse{70%{box-shadow:0 0 0 6px rgba(224,120,107,0)}100%{box-shadow:0 0 0 0 rgba(224,120,107,0)}}
 
   /* head */
   .head{text-align:center;padding-top:clamp(84px,20vw,112px);margin-bottom:26px}
@@ -155,7 +158,7 @@
   .done{text-align:center}
   .done .big{font-size:46px;line-height:1.1}
   .done h2{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:30px;line-height:1.15;margin-top:8px}
-  .done p{font-size:15.5px;color:var(--soft);margin-top:8px;word-break:keep-all;text-wrap:balance}
+  .done p{font-size:15.5px;color:var(--soft);margin-top:8px;word-break:keep-all;text-wrap:balance;white-space:pre-line}
 
 
   .demo{margin-top:14px;text-align:center;font-size:12.5px;color:var(--faint);word-break:keep-all}
@@ -185,6 +188,7 @@
 <nav class="topnav" aria-label="Menu">
   <a href="./">HOME</a>
   <a href="rsvp.html" class="on">RSVP</a>
+  <a href="vote.html" data-vote-nav hidden>VOTE</a>
 </nav>
 
 <main class="wrap">
@@ -366,7 +370,7 @@ function fillForm() {
 function showDone() {
   const a = current.data.attending;
   const copy = {
-    yes:   ['🎉', 'See you there!', '11/26 목요일 오후 1시에 만나요! 음식 하나, 포장한 선물 하나 잊지 마세요.'],
+    yes:   ['🎉', 'See you there!', '11/26 목요일 오후 1시에 만나요!\n음식 하나, 포장한 선물 하나 잊지 마세요.'],
     maybe: ['🤞', 'Hope you can make it!', `${current.data.eta && current.data.eta !== '아직 몰라요' ? current.data.eta + '에 볼 수 있길! ' : ''}확정되면 같은 이름과 비밀번호로 다시 들어와서 바꿔주세요.`],
     no:    ['🥲', "We'll miss you!", '아쉽지만 다음에 꼭 같이해요. 혹시 일정이 바뀌면 수정해 주세요!']
   }[a];
@@ -444,6 +448,28 @@ $('leaves').innerHTML = Array.from({ length: 5 }, (_, i) => {
 // ── boot ────────────────────────────────────────────────────
 try { store = await makeStore(); }
 catch (err) { console.error(err); setMsg($('auth-msg'), 'Firebase에 연결하지 못했어요. 설정을 확인해 주세요.'); }
+</script>
+<script>
+{
+  // Show vote links only while a host has opened the vote
+  // (checked every 20s, so it shows up without a refresh when a host opens the vote)
+  const checkVote = () => fetch('https://firestore.googleapis.com/v1/projects/friendsgiving-e4f59/databases/(default)/documents/config/vote?key=AIzaSyA1AO-E83s-nPwwtFOs_sjRbrajU-DaPvM')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      const phase = d?.fields?.phase?.stringValue || 'hidden';
+      document.querySelectorAll('[data-vote-nav]').forEach(a => { a.hidden = phase === 'hidden'; a.classList.toggle('live', phase === 'open'); });
+      const live = document.getElementById('vote-live');
+      if (live) {
+        const txt = { open: '투표 진행 중! 투표하러 가기 →', closed: '투표 마감! 결과 발표를 기다려 주세요', results: '결과 발표! 결과 보러 가기 →' }[phase];
+        live.hidden = !txt;
+        if (txt) { live.querySelector('span').textContent = txt; live.dataset.phase = phase; }
+      }
+    })
+    .catch(() => {});
+  checkVote();
+  setInterval(() => { if (!document.hidden) checkVote(); }, 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVote(); });
+}
 </script>
 </body>
 </html>

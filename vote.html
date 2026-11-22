@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Best Dish Vote · Friendsgiving</title>
+<meta name="description" content="Friendsgiving Best Dish Vote — 음식을 등록하고 투표해요!">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://friends-giving.github.io/vote.html">
+<meta property="og:title" content="Best Dish Vote · Friendsgiving">
+<meta property="og:description" content="오늘 제일 맛있었던 음식에 투표해 주세요!">
+<meta property="og:image" content="https://friends-giving.github.io/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://friends-giving.github.io/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Jost:wght@400;500&family=Gaegu:wght@700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#1b1009;
+    --card:rgba(246,232,207,.055);
+    --card-2:rgba(233,137,74,.10);
+    --ink:#f6e8cf;
+    --soft:rgba(246,232,207,.70);
+    --faint:rgba(246,232,207,.40);
+    --pumpkin:#ec8a48;
+    --gold:#eabb6e;
+    --cran:#e0786b;
+    --leaf:#a9b36c;
+    --line:rgba(234,187,110,.30);
+    --serif:'Fraunces', Georgia, serif;
+    --hand:'Gaegu', 'Gowun Dodum', cursive;
+    --kr:'Gowun Dodum', sans-serif;
+    --label:'Jost', 'Gowun Dodum', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;min-width:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--ink);font:16px/1.7 var(--kr);min-height:100vh;
+    overflow-x:clip;-webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgba(236,138,72,.13), transparent 55%),
+      radial-gradient(90% 60% at 50% 110%, rgba(234,187,110,.08), transparent 60%);
+  }
+  .wrap{position:relative;z-index:2;max-width:520px;margin:0 auto;padding-left:clamp(18px,5.5vw,28px);padding-right:clamp(18px,5.5vw,28px)}
+  [hidden]{display:none!important}
+
+  /* top nav */
+  .topnav{
+    position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 12px);
+    display:flex;gap:2px;padding:4px;border-radius:999px;
+    background:rgba(27,16,9,.62);border:1px solid var(--line);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
+  .topnav a{font-family:var(--label);font-weight:500;font-size:12.5px;letter-spacing:.14em;color:var(--soft);text-decoration:none;padding:6px 13px;border-radius:999px;line-height:1.2;transition:color .2s,background .2s}
+  .topnav a:hover{color:var(--ink)}
+  .topnav a.on{background:var(--pumpkin);color:var(--bg)}
+
+  /* head */
+  .head{text-align:center;padding-top:clamp(84px,20vw,112px);margin-bottom:22px}
+  .head .trophy{width:56px;height:56px;margin:0 auto 6px;display:block}
+  .head .hand{display:block;font-family:var(--hand);font-size:22px;color:var(--gold);line-height:1.2}
+  .head h1{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:clamp(44px,13vw,66px);line-height:1;margin-top:6px}
+
+  .banner{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:16px;border:1.5px dashed rgba(234,187,110,.5);background:rgba(234,187,110,.07);font-size:14.5px;line-height:1.55;word-break:keep-all}
+  .banner i{font-style:normal;font-size:22px;flex:none}
+  .banner b{display:block;font-weight:400;color:var(--ink);font-size:15.5px}
+  .banner span{color:var(--soft)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+  .section-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:30px 0 12px}
+  .section-title h2{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:26px;line-height:1.2}
+  .section-title span{font-family:var(--label);font-size:12.5px;letter-spacing:.12em;color:var(--faint)}
+
+  /* login */
+  .login{margin-top:16px}
+  .login-sub{text-align:center;font-size:14.5px;color:var(--soft);margin-top:6px;word-break:keep-all;text-wrap:balance}
+  .login-sub b{color:var(--ink);font-weight:400}
+  .pin{display:flex;gap:10px;justify-content:center}
+  .pin input{
+    width:56px;height:62px;text-align:center;font-family:var(--serif);font-weight:600;font-size:28px;color:var(--ink);
+    background:rgba(27,16,9,.55);border:1.5px solid var(--line);border-radius:14px;outline:none;
+    -webkit-text-security:disc;caret-color:var(--pumpkin);transition:border-color .2s,box-shadow .2s;
+  }
+  .pin input:focus{border-color:var(--pumpkin);box-shadow:0 0 0 3px rgba(236,138,72,.18)}
+  .pin.shake{animation:shake .4s}
+  @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+  .me{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;font-size:14.5px;color:var(--soft)}
+  .me b{color:var(--ink);font-weight:400}
+  .me button{background:none;border:0;cursor:pointer;font:inherit;font-size:13.5px;color:var(--faint);text-decoration:underline;text-underline-offset:3px}
+  .me button:hover{color:var(--ink)}
+
+  /* add dish */
+  .add-toggle{
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;cursor:pointer;
+    font:inherit;font-size:16px;color:var(--ink);padding:14px;border-radius:16px;
+    border:1.5px dashed rgba(236,138,72,.6);background:var(--card-2);transition:background .2s;
+  }
+  .add-toggle:hover{background:rgba(233,137,74,.16)}
+  .add-toggle b{font-family:var(--serif);font-style:italic;font-weight:600;font-size:22px;color:var(--pumpkin);line-height:1}
+  .form{margin-top:14px}
+  .form-title{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:22px;text-align:center;line-height:1.2}
+  .field{margin-top:16px}
+  .field > label,.field > .label{display:block;font-family:var(--label);font-weight:500;font-size:12.5px;letter-spacing:.14em;color:var(--gold);margin-bottom:8px}
+  .field .opt{color:var(--faint);letter-spacing:.04em;font-weight:400}
+  .input{
+    width:100%;font:inherit;font-size:16.5px;color:var(--ink);
+    background:rgba(27,16,9,.55);border:1.5px solid var(--line);border-radius:14px;padding:11px 14px;
+    outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .input::placeholder{color:var(--faint)}
+  .input:focus{border-color:var(--pumpkin);box-shadow:0 0 0 3px rgba(236,138,72,.18)}
+  .emojis{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+  .emojis input{position:absolute;opacity:0;pointer-events:none}
+  .emojis label{display:grid;place-items:center;aspect-ratio:1;font-size:22px;cursor:pointer;border-radius:12px;border:1.5px solid transparent;background:rgba(27,16,9,.45);transition:border-color .15s,background .15s}
+  .emojis input:checked + label{border-color:var(--pumpkin);background:var(--card-2)}
+  .emojis input:focus-visible + label{box-shadow:0 0 0 3px rgba(236,138,72,.25)}
+  .row{display:flex;gap:10px;margin-top:20px}
+  .btn{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
+    font-family:var(--label);font-weight:500;font-size:15.5px;letter-spacing:.1em;
+    color:var(--bg);background:var(--pumpkin);border:0;padding:13px 18px;border-radius:999px;
+    box-shadow:0 8px 24px rgba(236,138,72,.28);transition:transform .2s,opacity .2s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn:disabled{opacity:.55;cursor:default;transform:none}
+  .btn.ghost{flex:none;background:none;color:var(--soft);box-shadow:none;border:1.5px solid var(--line)}
+  .msg{margin-top:12px;text-align:center;font-size:14px;color:var(--cran);word-break:keep-all}
+  .msg:empty{display:none}
+
+  /* dish list */
+  .dishes{list-style:none;display:grid;gap:10px}
+  .dish{position:relative;display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:18px;background:var(--card);border:1.5px solid var(--line);transition:border-color .2s,background .2s,transform .15s}
+  .dish.can-vote{cursor:pointer}
+  .dish.can-vote:hover{transform:translateY(-1px);border-color:rgba(236,138,72,.6)}
+  .dish.dim{opacity:.55}
+  .dish.voted{border-color:var(--pumpkin);background:var(--card-2)}
+  .dish .emo{flex:none;width:48px;height:48px;display:grid;place-items:center;font-size:28px;border-radius:14px;background:rgba(27,16,9,.5)}
+  .dish .info{flex:1}
+  .dish h3{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-weight:500;font-size:19px;line-height:1.3}
+  .dish .chef{font-size:13.5px;color:var(--gold)}
+  .dish p{font-size:13.5px;color:var(--soft);line-height:1.55;margin-top:2px;word-break:keep-all;overflow-wrap:anywhere}
+  .dish .mine{display:flex;gap:12px;margin-top:6px}
+  .dish .mine button{background:none;border:0;cursor:pointer;font:inherit;font-size:12.5px;color:var(--faint);text-decoration:underline;text-underline-offset:3px}
+  .dish .mine button:hover{color:var(--ink)}
+  .check{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;transition:background .2s,border-color .2s}
+  .check svg{width:16px;height:16px;opacity:0;transition:opacity .2s}
+  .dish.voted .check{background:var(--pumpkin);border-color:var(--pumpkin)}
+  .dish.voted .check svg{opacity:1}
+  .tag-mine{font-family:var(--label);font-size:10.5px;letter-spacing:.14em;color:var(--faint);margin-left:6px;vertical-align:middle}
+  .empty{text-align:center;font-family:var(--hand);font-size:20px;color:var(--faint);padding:22px 0}
+  .anon{text-align:center;font-size:13px;color:var(--faint);margin-top:14px;word-break:keep-all}
+
+  /* results */
+  .results{list-style:none;display:grid;gap:10px}
+  .res{position:relative;overflow:hidden;padding:14px 16px;border-radius:18px;background:var(--card);border:1.5px solid var(--line)}
+  .res.win{border-color:var(--gold);background:rgba(234,187,110,.10)}
+  .res .bar{position:absolute;inset:0 auto 0 0;background:rgba(236,138,72,.16);transition:width 1s cubic-bezier(.2,.8,.2,1)}
+  .res.win .bar{background:rgba(234,187,110,.22)}
+  .res .in{position:relative;display:flex;align-items:center;gap:12px}
+  .res .rank{flex:none;width:26px;text-align:center;font-family:var(--serif);font-style:italic;font-weight:600;font-size:20px;color:var(--pumpkin)}
+  .res.win .rank{font-size:24px}
+  .res .emo{flex:none;font-size:26px}
+  .res .info{flex:1}
+  .res h3{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-weight:500;font-size:18px;line-height:1.3}
+  .res .chef{font-size:13px;color:var(--gold)}
+  .res .n{flex:none;text-align:right;font-family:var(--serif);font-weight:600;font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
+  .res .n small{display:block;font-family:var(--label);font-weight:400;font-size:11px;letter-spacing:.1em;color:var(--faint);margin-top:3px}
+  .winner{text-align:center;margin-bottom:16px}
+  .winner .crown{font-size:44px;line-height:1.1}
+  .winner b{display:block;font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:clamp(28px,8vw,36px);line-height:1.15;margin-top:6px;word-break:keep-all}
+  .winner span{display:block;font-family:var(--hand);font-size:21px;color:var(--gold);margin-top:4px}
+
+  .foot{text-align:center;padding:48px 0 max(56px,env(safe-area-inset-bottom));font-family:var(--label);font-size:12px;letter-spacing:.2em;color:var(--faint)}
+  .loading{text-align:center;color:var(--faint);padding:30px 0;font-size:14.5px}
+
+  @media (max-width:360px){ .emojis{grid-template-columns:repeat(6,minmax(0,1fr))} .pin input{width:50px;height:56px} }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+
+<nav class="topnav" aria-label="Menu">
+  <a href="./">HOME</a>
+  <a href="rsvp.html">RSVP</a>
+  <a href="vote.html" class="on">VOTE</a>
+</nav>
+
+<main class="wrap">
+  <header class="head">
+    <svg class="trophy" viewBox="0 0 54 54" aria-hidden="true">
+      <path d="M17 8h20v12a10 10 0 0 1-20 0z" fill="#eabb6e"/>
+      <path d="M17 12H10v3a7 7 0 0 0 7 7M37 12h7v3a7 7 0 0 1-7 7" fill="none" stroke="#eabb6e" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M27 30v8" stroke="#eabb6e" stroke-width="2.6"/>
+      <rect x="18" y="38" width="18" height="8" rx="2" fill="#c9554d"/>
+      <path d="M27 12l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="#1b1009"/>
+    </svg>
+    <span class="hand">Who made the best dish?</span>
+    <h1>Best Dish Vote</h1>
+  </header>
+
+  <div class="banner" id="banner"></div>
+
+  <p class="loading" id="loading">불러오는 중…</p>
+
+  <!-- results (phase: results) -->
+  <section id="results-view" hidden>
+    <div class="section-title"><h2>Results</h2><span id="total"></span></div>
+    <div class="winner" id="winner"></div>
+    <ol class="results" id="results"></ol>
+  </section>
+
+  <!-- login (phase: open / closed, not signed in) -->
+  <form class="card login" id="login-view" hidden autocomplete="off" novalidate>
+    <h2 class="form-title">Who's voting?</h2>
+    <p class="login-sub">RSVP 때 쓴 <b>이름</b>과 <b>4자리 비밀번호</b>를 입력해 주세요.<br>RSVP를 안 했다면 지금 정하면 돼요!</p>
+    <div class="field">
+      <label for="l-name">NAME</label>
+      <input class="input" id="l-name" maxlength="20" placeholder="이름">
+    </div>
+    <div class="field">
+      <span class="label" id="pin-label">4-DIGIT PIN</span>
+      <div class="pin" id="pin" role="group" aria-labelledby="pin-label">
+        <input inputmode="numeric" maxlength="1" aria-label="비밀번호 1번째 자리">
+        <input inputmode="numeric" maxlength="1" aria-label="비밀번호 2번째 자리">
+        <input inputmode="numeric" maxlength="1" aria-label="비밀번호 3번째 자리">
+        <input inputmode="numeric" maxlength="1" aria-label="비밀번호 4번째 자리">
+      </div>
+    </div>
+    <div class="row"><button class="btn" type="submit" id="login-btn">START →</button></div>
+    <p class="msg" id="login-msg" role="status"></p>
+  </form>
+
+  <!-- vote + add (phase: open / closed, signed in) -->
+  <section id="vote-view" hidden>
+    <div class="me"><span>🙋 <b id="me-name"></b> 님</span><button type="button" id="logout-btn">로그아웃</button></div>
+
+    <button class="add-toggle" id="add-toggle" type="button"><b>+</b> 내 음식 등록하기</button>
+
+    <form class="card form" id="dish-form" hidden novalidate autocomplete="off">
+      <h2 class="form-title" id="form-title">Add your dish</h2>
+      <div class="field">
+        <label for="d-name">DISH</label>
+        <input class="input" id="d-name" maxlength="40" placeholder="음식 이름 (예: 김치전)">
+      </div>
+      <div class="field">
+        <label for="d-chef">MADE BY</label>
+        <input class="input" id="d-chef" maxlength="20" placeholder="만든 사람">
+      </div>
+      <div class="field">
+        <label for="d-desc">ONE-LINER <span class="opt">(선택)</span></label>
+        <input class="input" id="d-desc" maxlength="80" placeholder="한 줄 소개 (예: 할머니 레시피!)">
+      </div>
+      <div class="field">
+        <span class="label">EMOJI</span>
+        <div class="emojis" id="emojis" role="radiogroup" aria-label="음식 이모지"></div>
+      </div>
+      <div class="row">
+        <button class="btn ghost" type="button" id="cancel-btn">취소</button>
+        <button class="btn" type="submit" id="save-btn">등록하기</button>
+      </div>
+      <p class="msg" id="form-msg" role="status"></p>
+    </form>
+
+    <div class="section-title"><h2>Dishes</h2><span id="count"></span></div>
+    <ul class="dishes" id="dishes"></ul>
+    <p class="empty" id="empty" hidden>아직 등록된 음식이 없어요.<br>첫 번째로 등록해 주세요!</p>
+    <p class="anon" id="anon"></p>
+  </section>
+
+  <p class="msg" id="err" role="status"></p>
+</main>
+
+<footer class="foot">FRIENDSGIVING · 11.26.2026</footer>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey: "AIzaSyA1AO-E83s-nPwwtFOs_sjRbrajU-DaPvM",
+  authDomain: "friendsgiving-e4f59.firebaseapp.com",
+  projectId: "friendsgiving-e4f59",
+  storageBucket: "friendsgiving-e4f59.firebasestorage.app",
+  messagingSenderId: "901880044903",
+  appId: "1:901880044903:web:7844e1d68924cc150e63c2"
+};
+const V = "10.12.2";
+const $ = (id) => document.getElementById(id);
+
+let fs, db;
+try {
+  const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`);
+  fs = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`);
+  db = fs.getFirestore(initializeApp(firebaseConfig));
+} catch (e) { console.error(e); $('loading').textContent = '연결하지 못했어요. 새로고침해 주세요.'; throw e; }
+
+// ── helpers (same as rsvp.html) ─────────────────────────────
+const cleanName = (s) => s.trim().replace(/\s+/g, ' ');
+const nameKey = (s) => cleanName(s).toLowerCase().replace(/[\/.#$\[\]]/g, '_');
+const sha256 = async (text) => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+};
+const hashPin = (key, pin) => sha256(`friendsgiving:${key}:${pin}`);
+const ms = (t) => (t && typeof t.toMillis === 'function') ? t.toMillis() : Date.now();
+const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+const EMOJIS = ['🍗','🥧','🍝','🍕','🥗','🍲','🍜','🍣','🍛','🥟','🌮','🍱','🍰','🧁','🍪','🍹'];
+$('emojis').innerHTML = EMOJIS.map((e, i) =>
+  `<input type="radio" name="emoji" id="em-${i}" value="${e}"${i === 0 ? ' checked' : ''}><label for="em-${i}">${e}</label>`).join('');
+
+// ── state ───────────────────────────────────────────────────
+// me = { id: rsvp doc id, name, pinHash, voteKey }
+let me = lsGet('fg-voter'), phase = 'hidden', results = null, dishes = [], myVote = null, editing = null;
+let unsubMyVote = null, phaseLoaded = false, dishesLoaded = false;
+
+// ── PIN boxes ───────────────────────────────────────────────
+const pinBoxes = [...document.querySelectorAll('#pin input')];
+pinBoxes.forEach((box, i) => {
+  box.addEventListener('input', () => {
+    const digits = box.value.replace(/\D/g, '');
+    if (digits.length > 1) {
+      digits.slice(0, 4 - i).split('').forEach((d, j) => pinBoxes[i + j].value = d);
+      pinBoxes[Math.min(i + digits.length, 3)].focus(); return;
+    }
+    box.value = digits;
+    if (digits && i < 3) pinBoxes[i + 1].focus();
+  });
+  box.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !box.value && i > 0) { pinBoxes[i - 1].focus(); pinBoxes[i - 1].value = ''; e.preventDefault(); }
+  });
+  box.addEventListener('focus', () => box.select());
+});
+const shakePin = () => { const p = $('pin'); p.classList.remove('shake'); void p.offsetWidth; p.classList.add('shake'); };
+
+// ── banner ──────────────────────────────────────────────────
+const BANNER = {
+  hidden:  ['🔒', '아직 열리지 않았어요', '파티 당일에 투표가 열려요. 조금만 기다려 주세요!'],
+  open:    ['🗳️', '투표 진행 중!', '음식을 등록하고, 제일 맛있었던 음식을 눌러 투표하세요. 1인 1표! 마감 전까지는 다른 음식으로 바꿀 수 있어요.'],
+  closed:  ['⏳', '투표 마감!', '곧 결과가 발표돼요. 두근두근…'],
+  results: ['🎉', '결과 발표!', '오늘의 Best Dish는…']
+};
+function renderBanner() {
+  const [i, b, s] = BANNER[phase] || BANNER.open;
+  $('banner').innerHTML = '';
+  const ie = document.createElement('i'); ie.textContent = i;
+  const d = document.createElement('div');
+  const be = document.createElement('b'); be.textContent = b;
+  const se = document.createElement('span'); se.textContent = s;
+  d.append(be, se); $('banner').append(ie, d);
+}
+
+// ── dish list (vote) ────────────────────────────────────────
+const CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#1b1009" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function renderDishes() {
+  const open = phase === 'open';
+  const canVote = open;
+  const voted = dishes.some(d => d.id === myVote) ? myVote : null;   // ignore a vote for a dish that was deleted
+  $('me-name').textContent = me?.name || '';
+  $('add-toggle').hidden = !open || !$('dish-form').hidden;
+  if (!open) $('dish-form').hidden = true;
+  $('anon').textContent = !open ? '투표가 마감됐어요.'
+    : voted ? '✅ 투표 완료! 다른 음식을 누르면 표가 옮겨가고, 한 번 더 누르면 취소돼요. 다른 손님들은 누가 어디에 투표했는지 몰라요.'
+    : '👆 제일 맛있었던 음식을 눌러 투표하세요. 1인 1표예요!';
+  $('count').textContent = dishes.length ? `${dishes.length} DISHES` : '';
+  $('dishes').innerHTML = '';
+  dishes.forEach(d => {
+    const mine = me && d.createdBy === me.id;
+    const li = document.createElement('li');
+    li.className = 'dish' + (canVote ? ' can-vote' : '') + (voted === d.id ? ' voted' : '');
+    if (canVote) { li.tabIndex = 0; li.setAttribute('role', 'button'); }
+    const emo = document.createElement('span'); emo.className = 'emo'; emo.textContent = d.emoji || '🍽️';
+    const info = document.createElement('div'); info.className = 'info';
+    const h = document.createElement('h3'); h.textContent = d.name;
+    if (mine) { const t = document.createElement('span'); t.className = 'tag-mine'; t.textContent = 'MINE'; h.append(t); }
+    const chef = document.createElement('div'); chef.className = 'chef'; chef.textContent = `by ${d.chef}`;
+    info.append(h, chef);
+    if (d.desc) { const p = document.createElement('p'); p.textContent = d.desc; info.append(p); }
+    if (open && mine) {
+      const box = document.createElement('div'); box.className = 'mine';
+      const eb = document.createElement('button'); eb.type = 'button'; eb.textContent = '수정';
+      eb.addEventListener('click', (ev) => { ev.stopPropagation(); openForm(d); });
+      const xb = document.createElement('button'); xb.type = 'button'; xb.textContent = '삭제';
+      xb.addEventListener('click', (ev) => { ev.stopPropagation(); removeDish(d); });
+      box.append(eb, xb); info.append(box);
+    }
+    li.append(emo, info);
+    if (open) {
+      const c = document.createElement('span'); c.className = 'check'; c.innerHTML = CHECK; li.append(c);
+    }
+    if (canVote) {
+      li.addEventListener('click', () => castVote(d.id));
+      li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); castVote(d.id); } });
+    }
+    $('dishes').append(li);
+  });
+  $('empty').hidden = dishes.length > 0;
+}
+
+// ── results (published by a host as counts only) ────────────
+function renderResults() {
+  const counts = Object.fromEntries(dishes.map(d => [d.id, (results && results[d.id]) || 0]));
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const ranked = [...dishes].sort((a, b) => counts[b.id] - counts[a.id] || ms(a.createdAt) - ms(b.createdAt));
+  const top = ranked.length ? counts[ranked[0].id] : 0;
+  const winners = top > 0 ? ranked.filter(d => counts[d.id] === top) : [];
+
+  $('total').textContent = `${total} VOTES`;
+  $('winner').innerHTML = '';
+  if (winners.length) {
+    const c = document.createElement('div'); c.className = 'crown'; c.textContent = '👑';
+    const b = document.createElement('b'); b.textContent = winners.map(w => `${w.emoji || ''} ${w.name}`.trim()).join(' & ');
+    const s = document.createElement('span'); s.textContent = `by ${winners.map(w => w.chef).join(' & ')}`;
+    $('winner').append(c, b, s);
+  }
+  $('results').innerHTML = '';
+  let rank = 0, prev = null;
+  ranked.forEach((d, i) => {
+    const n = counts[d.id];
+    if (n !== prev) { rank = i + 1; prev = n; }
+    const win = n === top && top > 0;
+    const li = document.createElement('li'); li.className = 'res' + (win ? ' win' : '');
+    const bar = document.createElement('span'); bar.className = 'bar'; bar.style.width = '0%';
+    const inner = document.createElement('div'); inner.className = 'in';
+    const r = document.createElement('span'); r.className = 'rank'; r.textContent = win ? '👑' : rank;
+    const emo = document.createElement('span'); emo.className = 'emo'; emo.textContent = d.emoji || '🍽️';
+    const info = document.createElement('div'); info.className = 'info';
+    const h = document.createElement('h3'); h.textContent = d.name;
+    const chef = document.createElement('div'); chef.className = 'chef'; chef.textContent = `by ${d.chef}`;
+    info.append(h, chef);
+    const num = document.createElement('div'); num.className = 'n'; num.textContent = n;
+    const sm = document.createElement('small'); sm.textContent = n === 1 ? 'VOTE' : 'VOTES'; num.append(sm);
+    inner.append(r, emo, info, num); li.append(bar, inner); $('results').append(li);
+    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = top ? `${(n / top) * 100}%` : '0%'; }));
+  });
+}
+
+function render() {
+  if (!phaseLoaded || !dishesLoaded) return;
+  $('loading').hidden = true;
+  renderBanner();
+  const res = phase === 'results', closedOff = phase === 'hidden';
+  $('results-view').hidden = !res;
+  $('login-view').hidden = res || closedOff || !!me;
+  $('vote-view').hidden = res || closedOff || !me;
+  if (closedOff) return;
+  if (res) renderResults(); else if (me) renderDishes();
+}
+
+// ── login ───────────────────────────────────────────────────
+$('login-view').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('login-msg');
+  const name = cleanName($('l-name').value), pin = pinBoxes.map(b => b.value).join('');
+  if (!name) { msg.textContent = '이름을 입력해 주세요.'; $('l-name').focus(); return; }
+  if (!/^\d{4}$/.test(pin)) { msg.textContent = '비밀번호 숫자 4자리를 입력해 주세요.'; shakePin(); return; }
+  $('login-btn').disabled = true; msg.textContent = '';
+  try {
+    const id = nameKey(name), pinHash = await hashPin(id, pin);
+    const ref = fs.doc(db, 'rsvps', id);
+    const snap = await fs.getDoc(ref);
+    if (snap.exists() && snap.data().pinHash !== pinHash) {
+      msg.textContent = '이미 등록된 이름이에요. 비밀번호를 확인해 주세요!';
+      shakePin(); pinBoxes.forEach(b => b.value = ''); pinBoxes[0].focus(); return;
+    }
+    if (!snap.exists()) {   // no RSVP yet → register as attending
+      await fs.setDoc(ref, { name, pinHash, attending: 'yes', eta: '', message: '', createdAt: fs.serverTimestamp(), updatedAt: fs.serverTimestamp() });
+    }
+    me = { id, name: snap.exists() ? snap.data().name : name, pinHash, voteKey: await sha256(`vote:${id}:${pinHash}`) };
+    lsSet('fg-voter', me);
+    watchMyVote(); render();
+  } catch (err) {
+    console.error(err); msg.textContent = '연결에 문제가 생겼어요. 잠시 후 다시 시도해 주세요.';
+  } finally { $('login-btn').disabled = false; }
+});
+$('logout-btn').addEventListener('click', () => {
+  me = null; myVote = null; lsSet('fg-voter', null);
+  if (unsubMyVote) { unsubMyVote(); unsubMyVote = null; }
+  $('l-name').value = ''; pinBoxes.forEach(b => b.value = ''); $('login-msg').textContent = '';
+  closeForm(); render();
+});
+
+function watchMyVote() {
+  if (unsubMyVote) unsubMyVote();
+  if (!me) return;
+  unsubMyVote = fs.onSnapshot(fs.doc(db, 'votes', me.voteKey), (s) => {
+    myVote = (s.exists() && s.data().dishId) || null;
+    if (phase !== 'results' && me) renderDishes();
+  }, (e) => console.error(e));
+}
+
+// ── actions ─────────────────────────────────────────────────
+async function castVote(dishId) {
+  if (phase !== 'open' || !me) return;
+  const prev = myVote;
+  const next = myVote === dishId ? '' : dishId;   // tap the checked dish again → cancel the vote
+  myVote = next || null; renderDishes();   // optimistic
+  try {
+    await fs.setDoc(fs.doc(db, 'votes', me.voteKey), { voter: me.id, pinHash: me.pinHash, dishId: next, updatedAt: fs.serverTimestamp() });
+  } catch (e) {
+    console.error(e); myVote = prev; renderDishes();
+    $('err').textContent = e.code === 'permission-denied' ? '투표가 마감됐거나 로그인 정보가 맞지 않아요.' : '투표하지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
+function openForm(d = null) {
+  editing = d;
+  $('form-title').textContent = d ? 'Edit your dish' : 'Add your dish';
+  $('save-btn').textContent = d ? '저장하기' : '등록하기';
+  $('d-name').value = d?.name || '';
+  $('d-chef').value = d?.chef || me?.name || '';
+  $('d-desc').value = d?.desc || '';
+  const em = d?.emoji || EMOJIS[0];
+  document.querySelectorAll('input[name=emoji]').forEach(r => r.checked = r.value === em);
+  $('form-msg').textContent = '';
+  $('dish-form').hidden = false; $('add-toggle').hidden = true;
+  $('dish-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => $('d-name').focus({ preventScroll: true }), 300);
+}
+function closeForm() { editing = null; $('dish-form').hidden = true; $('add-toggle').hidden = phase !== 'open'; }
+
+async function removeDish(d) {
+  if (!confirm(`'${d.name}'을(를) 삭제할까요?\n이 음식에 들어온 표는 무효가 돼요.`)) return;
+  try { await fs.updateDoc(fs.doc(db, 'dishes', d.id), { deleted: true, pinHash: me.pinHash }); }
+  catch (e) { console.error(e); $('err').textContent = '삭제하지 못했어요. 잠시 후 다시 시도해 주세요.'; }
+}
+
+$('add-toggle').addEventListener('click', () => openForm());
+$('cancel-btn').addEventListener('click', closeForm);
+$('dish-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = $('d-name').value.trim(), chef = $('d-chef').value.trim(), desc = $('d-desc').value.trim();
+  const emoji = document.querySelector('input[name=emoji]:checked')?.value || '';
+  if (!name) { $('form-msg').textContent = '음식 이름을 입력해 주세요.'; $('d-name').focus(); return; }
+  if (!chef) { $('form-msg').textContent = '만든 사람 이름을 입력해 주세요.'; $('d-chef').focus(); return; }
+  $('save-btn').disabled = true; $('form-msg').textContent = '';
+  try {
+    if (editing) {
+      await fs.updateDoc(fs.doc(db, 'dishes', editing.id), { name, chef, desc, emoji, pinHash: me.pinHash });
+    } else {
+      await fs.addDoc(fs.collection(db, 'dishes'), { name, chef, desc, emoji, createdBy: me.id, pinHash: me.pinHash, createdAt: fs.serverTimestamp() });
+    }
+    closeForm();
+  } catch (err) {
+    console.error(err); $('form-msg').textContent = '저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
+  } finally { $('save-btn').disabled = false; }
+});
+
+// ── live data ───────────────────────────────────────────────
+fs.onSnapshot(fs.doc(db, 'config', 'vote'), (s) => {
+  const d = s.exists() ? s.data() : {};
+  phase = d.phase || 'hidden'; results = d.results || null; phaseLoaded = true; render();
+}, (e) => { console.error(e); phaseLoaded = true; render(); });
+
+fs.onSnapshot(fs.collection(db, 'dishes'), (snap) => {
+  dishes = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => !d.deleted).sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
+  dishesLoaded = true; render();
+}, (e) => { console.error(e); $('loading').textContent = '음식 목록을 불러오지 못했어요.'; });
+
+if (me) watchMyVote();
+</script>
+</body>
+</html>

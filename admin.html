@@ -95,6 +95,29 @@
   .guests time{display:block;font-family:var(--label);font-size:11.5px;letter-spacing:.06em;color:var(--faint);margin-top:4px}
   .empty{text-align:center;font-family:var(--hand);font-size:20px;color:var(--faint);margin-top:22px}
 
+  /* vote admin */
+  .sec{display:flex;align-items:baseline;justify-content:space-between;margin:40px 0 12px}
+  .sec h2{font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:26px;line-height:1.2}
+  .sec span{font-family:var(--label);font-size:12.5px;letter-spacing:.12em;color:var(--faint)}
+  .phase{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .phase button{appearance:none;font:inherit;color:inherit;cursor:pointer;padding:12px 6px 10px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);text-align:center;transition:border-color .2s,background .2s}
+  .phase button.on{border-color:var(--pumpkin);background:var(--card-2)}
+  .phase i{display:block;font-style:normal;font-size:20px;line-height:1.2}
+  .phase b{display:block;font-weight:400;font-size:14px;margin-top:2px}
+  .phase-note{font-size:13px;color:var(--faint);text-align:center;margin-top:10px;word-break:keep-all}
+  .tally{list-style:none;margin-top:14px;display:grid;gap:8px}
+  .tally li{position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:var(--card);border:1px solid rgba(234,187,110,.18)}
+  .tally .fill{position:absolute;inset:0 auto 0 0;background:rgba(236,138,72,.14)}
+  .tally .emo,.tally .info,.tally .n,.tally .del{position:relative}
+  .tally .emo{font-size:22px}
+  .tally .info{flex:1}
+  .tally b{display:block;font-weight:400;font-size:15.5px;line-height:1.4}
+  .tally .info span{font-size:12.5px;color:var(--gold)}
+  .tally .n{font-family:var(--serif);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums}
+  .tally .who{display:block;font-size:12px;color:var(--faint);line-height:1.5;margin-top:2px;word-break:keep-all}
+  .tally .del{background:none;border:0;cursor:pointer;font-size:15px;opacity:.5;padding:4px}
+  .tally .del:hover{opacity:1}
+
   .foot{text-align:center;padding:48px 0 max(56px,env(safe-area-inset-bottom));font-family:var(--label);font-size:12px;letter-spacing:.2em;color:var(--faint)}
 </style>
 </head>
@@ -103,6 +126,7 @@
 <nav class="topnav" aria-label="Menu">
   <a href="./">HOME</a>
   <a href="rsvp.html">RSVP</a>
+  <a href="vote.html">VOTE</a>
 </nav>
 
 <main class="wrap">
@@ -142,6 +166,17 @@
     <button class="link all" id="show-all" type="button" hidden>전체 보기</button>
     <ul class="guests" id="guests"></ul>
     <p class="empty" id="empty" hidden>아직 응답이 없어요.</p>
+
+    <div class="sec"><h2>Best Dish Vote</h2><span id="v-total"></span></div>
+    <div class="phase" id="phase">
+      <button type="button" data-p="hidden"><i>🔒</i><b>비공개</b></button>
+      <button type="button" data-p="open"><i>🗳️</i><b>투표 진행</b></button>
+      <button type="button" data-p="closed"><i>⏳</i><b>투표 마감</b></button>
+      <button type="button" data-p="results"><i>🎉</i><b>결과 공개</b></button>
+    </div>
+    <p class="phase-note" id="phase-note"></p>
+    <ul class="tally" id="tally"></ul>
+    <p class="empty" id="v-empty" hidden>아직 등록된 음식이 없어요.</p>
   </section>
 </main>
 
@@ -227,6 +262,74 @@ document.querySelectorAll('.stat').forEach(b => b.addEventListener('click', () =
 }));
 $('show-all').addEventListener('click', () => { filter = null; render(); });
 
+// ── vote admin ──────────────────────────────────────────────
+let vPhase = 'hidden', vDishes = [], vVotes = [], vStarted = false;
+const PHASE_NOTE = {
+  hidden: '투표 페이지가 닫혀 있어요. 손님은 메뉴에서 VOTE가 안 보이고, 들어와도 "아직 열리지 않았어요"만 떠요.',
+  open: '지금은 음식 등록과 투표를 할 수 있어요(RSVP 1명당 1표, 마감 전까지 변경 가능). 득표 현황은 관리자에게만 보여요.',
+  closed: '투표가 마감됐어요. 손님 화면에는 "곧 결과 발표"가 떠요.',
+  results: '손님 화면에 순위와 득표수가 공개됐어요. (누가 누구를 찍었는지는 공개되지 않아요)'
+};
+// 1 vote per RSVP: if someone somehow has several vote docs, only their latest one counts
+function latestVotes() {
+  const byVoter = {};
+  vVotes.forEach(v => {
+    if (!v.voter) return;
+    const t = (v.updatedAt && v.updatedAt.toMillis) ? v.updatedAt.toMillis() : Date.now();
+    if (!byVoter[v.voter] || t >= byVoter[v.voter].t) byVoter[v.voter] = { ...v, t };
+  });
+  return Object.values(byVoter);
+}
+function tally() {
+  const counts = Object.fromEntries(vDishes.map(d => [d.id, 0]));
+  latestVotes().forEach(v => { if (v.dishId in counts) counts[v.dishId]++; });
+  return counts;
+}
+function renderVote() {
+  document.querySelectorAll('#phase button').forEach(b => b.classList.toggle('on', b.dataset.p === vPhase));
+  $('phase-note').textContent = PHASE_NOTE[vPhase];
+  const counts = tally();
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const votersOf = {};
+  latestVotes().forEach(v => { (votersOf[v.dishId] ||= []).push(v.voter); });
+  const top = Math.max(1, ...Object.values(counts));
+  $('v-total').textContent = `${vDishes.length} DISHES · ${total} VOTES`;
+  $('tally').innerHTML = '';
+  [...vDishes].sort((a, b) => counts[b.id] - counts[a.id]).forEach(d => {
+    const li = document.createElement('li');
+    const fill = document.createElement('span'); fill.className = 'fill'; fill.style.width = `${(counts[d.id] / top) * 100}%`;
+    const emo = document.createElement('span'); emo.className = 'emo'; emo.textContent = d.emoji || '🍽️';
+    const info = document.createElement('div'); info.className = 'info';
+    const b = document.createElement('b'); b.textContent = d.name;
+    const s = document.createElement('span'); s.textContent = `by ${d.chef}`;
+    info.append(b, s);
+    if (votersOf[d.id]?.length) { const w = document.createElement('small'); w.className = 'who'; w.textContent = '🗳 ' + votersOf[d.id].join(', '); info.append(w); }
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = counts[d.id];
+    const del = document.createElement('button'); del.className = 'del'; del.type = 'button'; del.title = '삭제'; del.textContent = '🗑';
+    del.addEventListener('click', async () => {
+      if (!confirm(`'${d.name}'을(를) 삭제할까요? 이 음식에 들어온 표도 무효가 돼요.`)) return;
+      try { await fs.deleteDoc(fs.doc(db, 'dishes', d.id)); } catch (e) { console.error(e); alert('삭제하지 못했어요.'); }
+    });
+    li.append(fill, emo, info, n, del); $('tally').append(li);
+  });
+  $('v-empty').hidden = vDishes.length > 0;
+}
+document.querySelectorAll('#phase button').forEach(b => b.addEventListener('click', async () => {
+  const p = b.dataset.p;
+  if (p === vPhase) return;
+  if (p === 'results' && !confirm('결과를 모두에게 공개할까요?')) return;
+  // On reveal, publish only the counts — guests never see who voted for what
+  const data = p === 'results' ? { phase: p, results: tally() } : { phase: p };
+  try { await fs.setDoc(fs.doc(db, 'config', 'vote'), data); }
+  catch (e) { console.error(e); alert('바꾸지 못했어요. 규칙이 게시됐는지 확인해 주세요.'); }
+}));
+function startVoteAdmin() {
+  if (vStarted) return; vStarted = true;
+  fs.onSnapshot(fs.doc(db, 'config', 'vote'), s => { vPhase = (s.exists() && s.data().phase) || 'hidden'; renderVote(); }, e => console.error(e));
+  fs.onSnapshot(fs.collection(db, 'dishes'), s => { vDishes = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => !d.deleted); renderVote(); }, e => console.error(e));
+  fs.onSnapshot(fs.collection(db, 'votes'), s => { vVotes = s.docs.map(d => d.data()); renderVote(); }, e => console.error(e));
+}
+
 // ── auth state ──────────────────────────────────────────────
 au.onAuthStateChanged(auth, async (user) => {
   if (unsub) { unsub(); unsub = null; }
@@ -241,6 +344,7 @@ au.onAuthStateChanged(auth, async (user) => {
   }
   $('me').textContent = email;
   show('v-list');
+  startVoteAdmin();
   unsub = fs.onSnapshot(fs.collection(db, 'rsvps'),
     (snap) => { rows = snap.docs.map(d => d.data()); render(); },
     (err) => { console.error(err); $('denied-email').textContent = email; show('v-denied'); });
