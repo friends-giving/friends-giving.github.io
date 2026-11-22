@@ -149,6 +149,25 @@
   .note b{display:block;font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:21px;color:var(--leaf);line-height:1.3}
   .note p{font-size:15.5px;margin-top:6px;line-height:1.75;word-break:keep-all;text-wrap:balance}
 
+  /* game rules */
+  .rules{margin-top:0;padding:24px 20px 20px}
+  .rules-title{text-align:center;font-family:var(--serif);font-variation-settings:"SOFT" 100;font-style:italic;font-weight:600;font-size:26px;line-height:1.2}
+  .rules-title + .hand-sub{display:block;text-align:center;font-family:var(--hand);font-size:19px;color:var(--gold);line-height:1.3;margin-top:2px}
+  .steps{list-style:none;margin-top:18px;display:grid;gap:14px}
+  .steps li{display:flex;gap:12px;align-items:flex-start}
+  .steps .n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--pumpkin);color:var(--bg);font-family:var(--serif);font-style:italic;font-weight:600;font-size:16px;line-height:1;margin-top:1px}
+  .steps b{display:block;font-weight:400;font-size:16.5px;line-height:1.45}
+  .steps p{font-size:14.5px;color:var(--soft);line-height:1.6;word-break:keep-all}
+  .choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .choices span{font-size:14px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(246,232,207,.05);white-space:nowrap}
+  .choices span:last-child{border-color:rgba(224,120,107,.55);background:rgba(224,120,107,.10)}
+  .special{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:20px}
+  .special div{text-align:center;padding:12px 6px 10px;border-radius:14px;background:var(--card-2);border:1px solid rgba(236,138,72,.30)}
+  .special i{display:block;font-style:normal;font-size:22px;line-height:1.2}
+  .special b{display:block;font-weight:400;font-size:14px;line-height:1.35;margin-top:4px;word-break:keep-all}
+  .special span{display:block;font-size:12.5px;color:var(--soft);line-height:1.45;margin-top:3px;word-break:keep-all}
+  .rules-end{text-align:center;margin-top:18px;font-family:var(--hand);font-size:21px;color:var(--gold);line-height:1.35;word-break:keep-all}
+
   /* footer */
   .footer{text-align:center;padding:clamp(64px,16vw,100px) 0 max(64px,env(safe-area-inset-bottom))}
   .footer .pumpkins{margin:0 auto}
@@ -158,6 +177,10 @@
 
   @media (max-width:380px){
     .gifts{grid-template-columns:minmax(0,1fr)}
+    .special{grid-template-columns:minmax(0,1fr)}
+    .special div{display:grid;grid-template-columns:30px 1fr;column-gap:8px;text-align:left;padding:10px 12px}
+    .special i{grid-row:span 2;align-self:center}
+    .special b,.special span{margin-top:0}
   }
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
@@ -230,7 +253,7 @@
       <path d="M20 28l4 4M30 24l2 5M42 27l-3 4" stroke="#f6e8cf" stroke-width="2.2" stroke-linecap="round"/>
       <path d="M26 12c-2-3 2-5 0-8M36 12c-2-3 2-5 0-8" stroke="rgba(246,232,207,.5)" stroke-width="2" fill="none" stroke-linecap="round"/>
     </svg>
-    <span class="hand">음식 하나씩 들고 오기!</span>
+    <span class="hand">Bring a dish to share!</span>
     <h2>Potluck Party!</h2>
   </div>
   <div class="potluck card pop">
@@ -257,6 +280,23 @@
     <p class="sub">집에서 안 쓰는 물건을 <b>포장해서</b> 가져와 주세요!</p>
   </div>
 
+  <div class="rules card pop">
+    <h3 class="rules-title">How to Play</h3>
+    <span class="hand-sub">게임 방법</span>
+    <ol class="steps">
+      <li><span class="n">1</span><div><b>순서 뽑기</b><p>랜덤으로 번호를 뽑아 순서를 정해요.</p></div></li>
+      <li><span class="n">2</span><div><b>1번은 선물 개봉</b><p>포장된 선물 하나를 골라 열어요.</p></div></li>
+      <li><span class="n">3</span><div><b>2번부터는 둘 중 하나!</b>
+        <div class="choices"><span>🎁 새 선물 열기</span><span>😈 열린 선물 뺏기 (Steal)</span></div></div></li>
+      <li><span class="n">4</span><div><b>뺏긴 사람은?</b><p>새 선물을 열거나, 다른 사람 선물을 뺏을 수 있어요.</p></div></li>
+    </ol>
+    <div class="special">
+      <div><i>🙅</i><b>바로 되뺏기 금지</b><span>방금 내 걸 뺏은 사람 선물은 X</span></div>
+      <div><i>🔒</i><b>3번 뺏기면 Lock</b><span>한 선물은 최대 3번까지</span></div>
+      <div><i>👑</i><b>1번의 마지막 찬스</b><span>다 받은 후 Steal 한 번 더</span></div>
+    </div>
+    <p class="rules-end">🎄 마지막에 들고 있는 선물이 내 선물! 👀</p>
+  </div>
   <span class="examples-label pop">🎁 선물 예시 🎁</span>
   <ul class="gifts">
     <li class="gift card pop">
@@ -287,8 +327,9 @@
 
   <div class="note pop">
     <b>✨ 쓰레기 선물이 아니에요! ✨</b>
-    <p>본인 집에 가지고 있지만 잘 사용하지 않는 물건을 서로 교환하는 게 목적이에요.</p>
+    <p>본인 집에 가지고 있지만 잘 사용하지 않는 물건을 서로 교환하는 게 목적이에요.<br>비싼 선물을 새로 살 필요 없어요 🙅‍♀️</p>
   </div>
+
 </section>
 
 <!-- FOOTER -->
