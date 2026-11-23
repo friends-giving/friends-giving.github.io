@@ -231,6 +231,19 @@ const fmt = (t) => {
   return new Date(n).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 };
 
+// 공개 명단(guests)이 rsvps와 다르거나 빠져 있으면 맞춰줘요 (기능 추가 전 응답 채우기용)
+let guestMap = null, rsvpDocs = null;
+function syncGuests() {
+  if (!guestMap || !rsvpDocs) return;
+  for (const r of rsvpDocs) {
+    const want = { name: r.name, attending: r.attending, eta: r.eta || '', message: r.message || '' };
+    const g = guestMap.get(r.id);
+    if (g && Object.keys(want).every(k => (g[k] || '') === want[k])) continue;
+    guestMap.set(r.id, want);
+    fs.setDoc(fs.doc(db, 'guests', r.id), { ...want, updatedAt: fs.serverTimestamp() }).catch(e => console.error('guest sync', r.id, e));
+  }
+}
+
 function render() {
   ['yes', 'maybe', 'no'].forEach(k => $(`n-${k}`).textContent = rows.filter(r => r.attending === k).length);
   document.querySelectorAll('.stat').forEach(b => b.classList.toggle('on', b.dataset.f === filter));
@@ -346,8 +359,9 @@ au.onAuthStateChanged(auth, async (user) => {
   $('me').textContent = email;
   show('v-list');
   startVoteAdmin();
+  fs.onSnapshot(fs.collection(db, 'guests'), s => { guestMap = new Map(s.docs.map(d => [d.id, d.data()])); syncGuests(); }, e => console.error(e));
   unsub = fs.onSnapshot(fs.collection(db, 'rsvps'),
-    (snap) => { rows = snap.docs.map(d => d.data()); render(); },
+    (snap) => { rows = snap.docs.map(d => d.data()); rsvpDocs = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); syncGuests(); },
     (err) => { console.error(err); $('denied-email').textContent = email; show('v-denied'); });
 });
 </script>

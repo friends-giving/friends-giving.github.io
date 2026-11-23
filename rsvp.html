@@ -162,6 +162,22 @@
   .done p{font-size:15.5px;color:var(--soft);margin-top:8px;word-break:keep-all;text-wrap:balance;white-space:pre-line}
 
 
+  /* guest list */
+  .guests{margin-top:30px}
+  .g-counts{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .g-counts span{font-family:var(--label);font-weight:500;font-size:12.5px;letter-spacing:.1em;padding:4px 12px;border-radius:999px;border:1px solid var(--line);color:var(--soft)}
+  .g-counts b{color:var(--ink);font-weight:500;margin-left:4px}
+  .g-list{list-style:none;margin-top:16px}
+  .g-list li{padding:14px 2px;border-top:1px solid var(--line)}
+  .g-row{display:flex;align-items:center;gap:10px}
+  .g-name{flex:1;min-width:0;font-size:16.5px;overflow-wrap:anywhere}
+  .g-eta{font-size:13px;color:var(--soft);white-space:nowrap}
+  .pill{flex:none;font-family:var(--label);font-weight:500;font-size:12px;letter-spacing:.1em;padding:3px 10px;border-radius:8px}
+  .pill.yes{background:rgba(169,179,108,.85);color:var(--bg)}
+  .pill.maybe{background:rgba(234,187,110,.2);color:var(--gold);border:1px solid rgba(234,187,110,.5)}
+  .pill.no{background:rgba(246,232,207,.08);color:var(--faint)}
+  .g-msg{margin-top:6px;font-size:14.5px;color:var(--soft);line-height:1.6;word-break:keep-all;overflow-wrap:anywhere;padding-left:10px;border-left:2px solid rgba(236,138,72,.45)}
+  .g-empty{text-align:center;font-size:14.5px;color:var(--faint);margin-top:16px}
   .demo{margin-top:14px;text-align:center;font-size:12.5px;color:var(--faint);word-break:keep-all}
   .foot{text-align:center;padding:48px 0 max(56px,env(safe-area-inset-bottom));font-family:var(--label);font-size:12px;letter-spacing:.2em;color:var(--faint)}
 
@@ -252,6 +268,7 @@
     <div class="field">
       <label for="message">MESSAGE <span class="opt">(선택)</span></label>
       <textarea class="input" id="message" maxlength="150" placeholder="하고 싶은 말 한마디!"></textarea>
+      <p class="hint">이름, 참석 여부, 메시지는 아래 Guest List에 모두에게 보여요.</p>
     </div>
 
     <button class="btn" type="submit" id="save-btn">SEND RSVP</button>
@@ -265,6 +282,14 @@
     <h2 id="done-title">See you there!</h2>
     <p id="done-text"></p>
     <button class="btn-ghost" type="button" id="edit-btn">응답 수정하기</button>
+  </section>
+
+  <!-- GUEST LIST (public) -->
+  <section class="card guests" id="guests">
+    <h2 class="card-title">Guest List</h2>
+    <div class="g-counts" id="g-counts"></div>
+    <ul class="g-list" id="g-list"></ul>
+    <p class="g-empty" id="g-empty">아직 응답이 없어요. 첫 번째로 RSVP 해 주세요!</p>
   </section>
 
   <p class="demo" id="demo" hidden>⚠️ 데모 모드 — Firebase 설정 전이라 응답이 이 브라우저에만 저장돼요.</p>
@@ -299,8 +324,13 @@ async function makeStore() {
       async save(id, data, isNew) {
         const payload = { ...data, updatedAt: fs.serverTimestamp() };
         if (isNew) payload.createdAt = fs.serverTimestamp();
-        await fs.setDoc(fs.doc(db, COLLECTION, id), payload, { merge: true });
+        // rsvps(비밀번호 포함)와 공개 명단 guests(비밀번호 제외)를 한 번에 저장
+        const batch = fs.writeBatch(db);
+        batch.set(fs.doc(db, COLLECTION, id), payload, { merge: true });
+        batch.set(fs.doc(db, 'guests', id), { name: data.name, attending: data.attending, eta: data.eta || '', message: data.message || '', updatedAt: fs.serverTimestamp() });
+        await batch.commit();
       },
+      watchGuests(cb) { fs.onSnapshot(fs.collection(db, 'guests'), s => cb(s.docs.map(d => d.data())), e => console.error(e)); },
     };
   }
   document.getElementById('demo').hidden = false;
@@ -309,6 +339,7 @@ async function makeStore() {
   const write = (all) => { try { localStorage.setItem(KEY, JSON.stringify(all)); } catch {} };
   return {
     async get(id) { return read()[id] || null; },
+    watchGuests(cb) { cb(Object.values(read())); },
     async save(id, data, isNew) {
       const all = read(); const now = Date.now();
       all[id] = { ...(all[id] || {}), ...data, updatedAt: now, ...(isNew ? { createdAt: now } : {}) };
@@ -439,6 +470,28 @@ $('back-btn').addEventListener('click', () => {
 });
 $('edit-btn').addEventListener('click', () => { fillForm(); show('step-form'); });
 
+// ── guest list ──────────────────────────────────────────────
+function renderGuests(list) {
+  const order = { yes: 0, maybe: 1, no: 2 };
+  list = list.filter(g => g.name && g.attending in order)
+    .sort((a, b) => order[a.attending] - order[b.attending] || a.name.localeCompare(b.name, 'ko'));
+  const n = (k) => list.filter(g => g.attending === k).length;
+  $('g-counts').innerHTML = list.length ? `<span>YES<b>${n('yes')}</b></span><span>MAYBE<b>${n('maybe')}</b></span><span>NO<b>${n('no')}</b></span>` : '';
+  $('g-empty').hidden = list.length > 0;
+  const ul = $('g-list'); ul.innerHTML = '';
+  for (const g of list) {
+    const li = document.createElement('li');
+    const row = document.createElement('div'); row.className = 'g-row';
+    const name = document.createElement('span'); name.className = 'g-name'; name.textContent = g.name;
+    row.append(name);
+    if (g.attending === 'maybe' && g.eta) { const t = document.createElement('span'); t.className = 'g-eta'; t.textContent = `⏰ ${g.eta}`; row.append(t); }
+    const pill = document.createElement('span'); pill.className = `pill ${g.attending}`; pill.textContent = { yes: 'YES', maybe: 'MAYBE', no: 'NO' }[g.attending];
+    row.append(pill); li.append(row);
+    if (g.message) { const m = document.createElement('p'); m.className = 'g-msg'; m.textContent = g.message; li.append(m); }
+    ul.append(li);
+  }
+}
+
 // ── leaves ──────────────────────────────────────────────────
 const colors = ['#ec8a48', '#e0786b', '#eabb6e', '#a9b36c'];
 $('leaves').innerHTML = Array.from({ length: 5 }, (_, i) => {
@@ -447,7 +500,7 @@ $('leaves').innerHTML = Array.from({ length: 5 }, (_, i) => {
 }).join('');
 
 // ── boot ────────────────────────────────────────────────────
-try { store = await makeStore(); }
+try { store = await makeStore(); store.watchGuests(renderGuests); }
 catch (err) { console.error(err); setMsg($('auth-msg'), 'Firebase에 연결하지 못했어요. 설정을 확인해 주세요.'); }
 </script>
 <script>
