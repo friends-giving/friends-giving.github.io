@@ -162,6 +162,28 @@
   .done p{font-size:15.5px;color:var(--soft);margin-top:8px;word-break:keep-all;text-wrap:balance;white-space:pre-line}
 
 
+  /* party size */
+  .stepper{display:flex;align-items:center;justify-content:center;gap:18px}
+  .stepper button{appearance:none;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:rgba(27,16,9,.5);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;transition:border-color .2s}
+  .stepper button:hover:not(:disabled){border-color:var(--pumpkin)}
+  .stepper button:disabled{opacity:.35;cursor:default}
+  .stepper output{min-width:64px;text-align:center;font-family:var(--serif);font-weight:600;font-size:28px;font-variant-numeric:tabular-nums}
+  .stepper output small{font-family:var(--body,inherit);font-weight:400;font-size:15px;color:var(--soft);margin-left:2px}
+  #party-names{display:grid;gap:8px;margin-top:14px}
+  #party-names:empty{display:none}
+  .p-row{display:flex;gap:8px;align-items:stretch}
+  .p-row .input{flex:1;min-width:0}
+  .seg{flex:none;display:flex;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(27,16,9,.5)}
+  .seg button{appearance:none;border:0;background:transparent;width:42px;font-size:19px;line-height:1;cursor:pointer;filter:grayscale(1);opacity:.45;transition:background .2s,opacity .2s,filter .2s}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--card-2);filter:none;opacity:1;box-shadow:inset 0 0 0 1.5px var(--pumpkin)}
+  .g-size{flex:none;font-size:13px;color:var(--soft);white-space:nowrap}
+  .g-list li.group{background:rgba(246,232,207,.035);margin:0 -20px;padding:14px 22px}
+  .g-list li.group > .g-row .g-name{font-weight:600;font-family:var(--serif);font-variation-settings:"SOFT" 100;font-size:17.5px}
+  .g-members{list-style:none;margin-top:6px}
+  .g-list .g-members li{display:flex;align-items:center;gap:10px;border:0;padding:7px 0 7px 16px;font-size:15.5px}
+  .g-members li span:first-child{flex:1;min-width:0;overflow-wrap:anywhere}
+
   /* guest list */
   .guests{margin-top:30px}
   .g-counts{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
@@ -254,6 +276,17 @@
       </div>
     </div>
 
+    <div class="field" id="party-field" hidden>
+      <span class="label">PARTY SIZE <span class="opt">(나 포함 몇 명?)</span></span>
+      <div class="stepper">
+        <button type="button" id="p-minus" aria-label="한 명 빼기">−</button>
+        <output id="p-n" aria-live="polite">1<small>명</small></output>
+        <button type="button" id="p-plus" aria-label="한 명 추가">+</button>
+      </div>
+      <div id="party-names"></div>
+      <p class="hint" id="party-hint" hidden>🙌 갈게요 · 🤔 아직 몰라요 · 😢 못 가요 — 사람마다 골라주세요.<br>같이 오는 사람은 따로 RSVP 안 해도 돼요!</p>
+    </div>
+
     <div class="field eta" id="eta-field" hidden>
       <p class="q">오게 된다면 몇 시쯤 도착할 것 같아요?<small>파티는 1시에 시작해요!</small></p>
       <div class="chips" role="radiogroup" aria-label="도착 예정 시간">
@@ -327,7 +360,7 @@ async function makeStore() {
         // rsvps(비밀번호 포함)와 공개 명단 guests(비밀번호 제외)를 한 번에 저장
         const batch = fs.writeBatch(db);
         batch.set(fs.doc(db, COLLECTION, id), payload, { merge: true });
-        batch.set(fs.doc(db, 'guests', id), { name: data.name, attending: data.attending, eta: data.eta || '', message: data.message || '', updatedAt: fs.serverTimestamp() });
+        batch.set(fs.doc(db, 'guests', id), { name: data.name, attending: data.attending, eta: data.eta || '', message: data.message || '', party: data.party || [], updatedAt: fs.serverTimestamp() });
         await batch.commit();
       },
       watchGuests(cb) { fs.onSnapshot(fs.collection(db, 'guests'), s => cb(s.docs.map(d => d.data())), e => console.error(e)); },
@@ -394,6 +427,8 @@ function fillForm() {
   $('form-welcome').append(w, document.createTextNode(current.isNew ? ' 님, 반가워요!' : ' 님, 응답을 수정할 수 있어요.'));
   document.querySelectorAll('input[name=attending]').forEach(r => r.checked = r.value === d.attending);
   document.querySelectorAll('input[name=eta]').forEach(r => r.checked = r.value === d.eta);
+  party = (d.party || []).map(m => typeof m === 'string' ? { name: m, attending: d.attending || 'yes' } : { ...m });
+  renderParty();
   syncEta();
   $('message').value = d.message || '';
   setMsg($('form-msg'), '');
@@ -412,9 +447,47 @@ function showDone() {
   show('step-done');
 }
 
-// ── ETA shows only for "maybe" ──────────────────────────────
+// ── party size (companions' names) ──────────────────────────
+const MAX_PARTY = 5;
+let party = [];   // [{ name, attending }]
+const STATUS = [['yes', '🙌', '갈게요'], ['maybe', '🤔', '아직 몰라요'], ['no', '😢', '못 가요']];
+function renderParty() {
+  const box = $('party-names'); box.innerHTML = '';
+  party.forEach((m, i) => {
+    const row = document.createElement('div'); row.className = 'p-row';
+    const inp = document.createElement('input');
+    inp.className = 'input'; inp.maxLength = 20; inp.value = m.name; inp.autocomplete = 'off';
+    inp.placeholder = `함께 오는 사람 ${i + 1} 이름`;
+    inp.addEventListener('input', () => m.name = inp.value);
+    const seg = document.createElement('div'); seg.className = 'seg'; seg.setAttribute('role', 'radiogroup');
+    STATUS.forEach(([v, emo, label]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = emo;
+      b.setAttribute('aria-label', label); b.title = label;
+      b.className = m.attending === v ? 'on' : ''; b.setAttribute('aria-checked', m.attending === v);
+      b.addEventListener('click', () => { m.attending = v; renderParty(); syncEta(); });
+      seg.append(b);
+    });
+    row.append(inp, seg); box.append(row);
+  });
+  $('p-n').firstChild.textContent = party.length + 1;
+  $('p-minus').disabled = party.length === 0;
+  $('p-plus').disabled = party.length >= MAX_PARTY;
+  $('party-hint').hidden = party.length === 0;
+}
+$('p-plus').addEventListener('click', () => {
+  if (party.length >= MAX_PARTY) return;
+  const me = document.querySelector('input[name=attending]:checked')?.value;
+  party.push({ name: '', attending: me === 'no' ? 'yes' : (me || 'yes') });
+  renderParty(); $('party-names').lastChild.querySelector('input').focus(); syncEta();
+});
+$('p-minus').addEventListener('click', () => { party.pop(); renderParty(); syncEta(); });
+
+// ── ETA shows when anyone is "maybe"; party size once an answer is picked ──
+const anyMaybe = () => document.querySelector('input[name=attending]:checked')?.value === 'maybe' || party.some(m => m.attending === 'maybe');
 function syncEta() {
-  $('eta-field').hidden = document.querySelector('input[name=attending]:checked')?.value !== 'maybe';
+  const a = document.querySelector('input[name=attending]:checked')?.value;
+  $('eta-field').hidden = !anyMaybe();
+  $('party-field').hidden = !a;
 }
 document.querySelectorAll('input[name=attending]').forEach(r => r.addEventListener('change', syncEta));
 
@@ -450,9 +523,11 @@ $('step-form').addEventListener('submit', async (e) => {
   const msg = $('form-msg');
   const attending = document.querySelector('input[name=attending]:checked')?.value;
   if (!attending) { setMsg(msg, '참석 여부를 골라주세요!'); return; }
-  const eta = attending === 'maybe' ? document.querySelector('input[name=eta]:checked')?.value : '';
-  if (attending === 'maybe' && !eta) { setMsg(msg, '도착 예정 시간을 골라주세요!'); $('eta-field').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
-  const data = { name: current.name, pinHash: current.pinHash, attending, eta, message: $('message').value.trim().slice(0, 150) };
+  const eta = anyMaybe() ? document.querySelector('input[name=eta]:checked')?.value : '';
+  if (anyMaybe() && !eta) { setMsg(msg, '도착 예정 시간을 골라주세요!'); $('eta-field').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  const partyData = party.map(m => ({ name: cleanName(m.name).slice(0, 20), attending: m.attending }));
+  if (partyData.some(m => !m.name)) { setMsg(msg, '함께 오는 사람 이름을 적어주세요!'); $('party-names').querySelector('input:placeholder-shown')?.focus(); return; }
+  const data = { name: current.name, pinHash: current.pinHash, attending, eta, party: partyData, message: $('message').value.trim().slice(0, 150) };
 
   const btn = $('save-btn'); btn.disabled = true; setMsg(msg, '');
   try {
@@ -471,22 +546,46 @@ $('back-btn').addEventListener('click', () => {
 $('edit-btn').addEventListener('click', () => { fillForm(); show('step-form'); });
 
 // ── guest list ──────────────────────────────────────────────
+// "Sarah & Tarun", "A, B & C"
+// 응답한 사람 + 함께 오는 사람을 [{ name, attending }] 로 (예전 형식인 이름 문자열도 처리)
+const members = (g) => [{ name: g.name, attending: g.attending },
+  ...(g.party || []).map(m => typeof m === 'string' ? { name: m, attending: g.attending } : m)];
+function groupName(g) {
+  const all = members(g).map(m => m.name);
+  return all.length < 3 ? all.join(' & ') : `${all.slice(0, -1).join(', ')} & ${all.at(-1)}`;
+}
 function renderGuests(list) {
   const order = { yes: 0, maybe: 1, no: 2 };
+  const best = (g) => Math.min(...members(g).map(m => order[m.attending] ?? 2));   // 그룹은 가장 긍정적인 응답 기준으로 정렬
   list = list.filter(g => g.name && g.attending in order)
-    .sort((a, b) => order[a.attending] - order[b.attending] || a.name.localeCompare(b.name, 'ko'));
-  const n = (k) => list.filter(g => g.attending === k).length;
+    .sort((a, b) => best(a) - best(b) || a.name.localeCompare(b.name, 'ko'));
+  const size = (g) => members(g).length;
+  const n = (k) => list.reduce((s, g) => s + members(g).filter(m => m.attending === k).length, 0);
   $('g-counts').innerHTML = list.length ? `<span>YES<b>${n('yes')}</b></span><span>MAYBE<b>${n('maybe')}</b></span><span>NO<b>${n('no')}</b></span>` : '';
   $('g-empty').hidden = list.length > 0;
   const ul = $('g-list'); ul.innerHTML = '';
   for (const g of list) {
     const li = document.createElement('li');
+    const makePill = (a) => { const p = document.createElement('span'); p.className = `pill ${a}`; p.textContent = { yes: 'YES', maybe: 'MAYBE', no: 'NO' }[a] || ''; return p; };
     const row = document.createElement('div'); row.className = 'g-row';
-    const name = document.createElement('span'); name.className = 'g-name'; name.textContent = g.name;
+    const name = document.createElement('span'); name.className = 'g-name'; name.textContent = groupName(g);
     row.append(name);
-    if (g.attending === 'maybe' && g.eta) { const t = document.createElement('span'); t.className = 'g-eta'; t.textContent = `⏰ ${g.eta}`; row.append(t); }
-    const pill = document.createElement('span'); pill.className = `pill ${g.attending}`; pill.textContent = { yes: 'YES', maybe: 'MAYBE', no: 'NO' }[g.attending];
-    row.append(pill); li.append(row);
+    if (g.eta && members(g).some(m => m.attending === 'maybe')) { const t = document.createElement('span'); t.className = 'g-eta'; t.textContent = `⏰ ${g.eta}`; row.append(t); }
+    if (size(g) > 1) {
+      // 그룹: 제목줄(이름 & 이름 · 👥 n명) 아래에 한 명씩 나열
+      li.className = 'group';
+      const c = document.createElement('span'); c.className = 'g-size'; c.textContent = `👥 ${size(g)}명`; row.append(c);
+      li.append(row);
+      const ul2 = document.createElement('ul'); ul2.className = 'g-members';
+      for (const m of members(g)) {
+        const mi = document.createElement('li');
+        const mn = document.createElement('span'); mn.textContent = m.name;
+        mi.append(mn, makePill(m.attending)); ul2.append(mi);
+      }
+      li.append(ul2);
+    } else {
+      row.append(makePill(g.attending)); li.append(row);
+    }
     if (g.message) { const m = document.createElement('p'); m.className = 'g-msg'; m.textContent = g.message; li.append(m); }
     ul.append(li);
   }

@@ -236,16 +236,18 @@ let guestMap = null, rsvpDocs = null;
 function syncGuests() {
   if (!guestMap || !rsvpDocs) return;
   for (const r of rsvpDocs) {
-    const want = { name: r.name, attending: r.attending, eta: r.eta || '', message: r.message || '' };
+    const want = { name: r.name, attending: r.attending, eta: r.eta || '', message: r.message || '', party: r.party || [] };
     const g = guestMap.get(r.id);
-    if (g && Object.keys(want).every(k => (g[k] || '') === want[k])) continue;
+    if (g && Object.keys(want).every(k => JSON.stringify(g[k] ?? (k === 'party' ? [] : '')) === JSON.stringify(want[k]))) continue;
     guestMap.set(r.id, want);
     fs.setDoc(fs.doc(db, 'guests', r.id), { ...want, updatedAt: fs.serverTimestamp() }).catch(e => console.error('guest sync', r.id, e));
   }
 }
 
 function render() {
-  ['yes', 'maybe', 'no'].forEach(k => $(`n-${k}`).textContent = rows.filter(r => r.attending === k).length);
+  // 인원수 = 응답한 사람 + 함께 오는 사람
+  const people = (r) => [r.attending, ...(r.party || []).map(m => typeof m === 'string' ? r.attending : m.attending)];
+  ['yes', 'maybe', 'no'].forEach(k => $(`n-${k}`).textContent = rows.reduce((s, r) => s + people(r).filter(a => a === k).length, 0));
   document.querySelectorAll('.stat').forEach(b => b.classList.toggle('on', b.dataset.f === filter));
   $('show-all').hidden = !filter;
 
@@ -260,6 +262,7 @@ function render() {
     const body = document.createElement('div'); body.className = 'body';
     const top = document.createElement('div'); top.className = 'top';
     const b = document.createElement('b'); b.textContent = r.name; top.append(b);
+    if (r.party && r.party.length) { const t = document.createElement('span'); t.className = 'eta'; t.textContent = `👥 +${r.party.length} (${r.party.map(m => typeof m === 'string' ? m : `${m.name} ${EMOJI[m.attending] || ''}`).join(', ')})`; t.style.whiteSpace = 'normal'; top.append(t); }
     if (r.attending === 'maybe' && r.eta) { const t = document.createElement('span'); t.className = 'eta'; t.textContent = `⏰ ${r.eta}`; top.append(t); }
     body.append(top);
     if (r.message) { const p = document.createElement('p'); p.textContent = r.message; body.append(p); }
