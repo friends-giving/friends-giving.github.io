@@ -121,6 +121,21 @@
   .emojis label{display:grid;place-items:center;aspect-ratio:1;font-size:22px;cursor:pointer;border-radius:12px;border:1.5px solid transparent;background:rgba(27,16,9,.45);transition:border-color .15s,background .15s}
   .emojis input:checked + label{border-color:var(--pumpkin);background:var(--card-2)}
   .emojis input:focus-visible + label{box-shadow:0 0 0 3px rgba(236,138,72,.25)}
+  /* photo */
+  .photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .photo-btns label{display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:15px;padding:12px 8px;border-radius:14px;border:1.5px solid var(--line);background:rgba(27,16,9,.55);transition:border-color .2s}
+  .photo-btns label:hover{border-color:var(--pumpkin)}
+  .photo-btns input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .photo-prev{position:relative;margin-top:10px;border-radius:14px;overflow:hidden;border:1.5px solid var(--line)}
+  .photo-prev img{display:block;width:100%;max-height:260px;object-fit:cover}
+  .photo-prev button{position:absolute;top:8px;right:8px;appearance:none;border:0;cursor:pointer;font:inherit;font-size:13px;color:var(--ink);background:rgba(27,16,9,.75);padding:5px 11px;border-radius:999px}
+  .photo-note{font-size:13px;color:var(--faint);margin-top:6px;text-align:center}
+  .photo-note:empty{display:none}
+  .emo.has-photo{padding:0;overflow:hidden;cursor:zoom-in;width:64px;height:64px}
+  .emo.has-photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .lightbox{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:rgba(10,6,3,.88);cursor:zoom-out}
+  .lightbox img{max-width:100%;max-height:85vh;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .lightbox p{position:absolute;bottom:max(24px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-family:var(--serif);font-style:italic;font-size:20px;color:var(--ink)}
   .row{display:flex;gap:10px;margin-top:20px}
   .btn{
     flex:1;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
@@ -261,6 +276,15 @@
         <span class="label">EMOJI</span>
         <div class="emojis" id="emojis" role="radiogroup" aria-label="음식 이모지"></div>
       </div>
+      <div class="field">
+        <span class="label">PHOTO <span class="opt">(선택)</span></span>
+        <div class="photo-btns">
+          <label>📷 사진 찍기<input type="file" accept="image/*" capture="environment" id="d-cam"></label>
+          <label>🖼️ 앨범에서 고르기<input type="file" accept="image/*" id="d-lib"></label>
+        </div>
+        <div class="photo-prev" id="photo-prev" hidden><img id="photo-img" alt="음식 사진 미리보기"><button type="button" id="photo-del">✕ 사진 빼기</button></div>
+        <p class="photo-note" id="photo-note"></p>
+      </div>
       <div class="row">
         <button class="btn ghost" type="button" id="cancel-btn">취소</button>
         <button class="btn" type="submit" id="save-btn">등록하기</button>
@@ -357,6 +381,28 @@ function renderBanner() {
 
 // ── dish list (vote) ────────────────────────────────────────
 const CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#1b1009" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// 사진이 있으면 사진 썸네일(누르면 크게 보기), 없으면 이모지
+function dishThumb(d, zoomable) {
+  const emo = document.createElement('span'); emo.className = 'emo';
+  if (!d.photo) { emo.textContent = d.emoji || '🍽️'; return emo; }
+  emo.classList.add('has-photo');
+  const img = document.createElement('img'); img.src = d.photo; img.alt = d.name; img.loading = 'lazy';
+  emo.append(img);
+  if (zoomable) emo.addEventListener('click', (ev) => { ev.stopPropagation(); openLightbox(d); });
+  else emo.style.cursor = 'default';
+  return emo;
+}
+function openLightbox(d) {
+  const box = document.createElement('div'); box.className = 'lightbox'; box.setAttribute('role', 'dialog');
+  const img = document.createElement('img'); img.src = d.photo; img.alt = d.name;
+  const cap = document.createElement('p'); cap.textContent = `${d.emoji || ''} ${d.name}`.trim();
+  box.append(img, cap);
+  const close = () => { box.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  box.addEventListener('click', close); document.addEventListener('keydown', onKey);
+  document.body.append(box);
+}
+
 function renderDishes() {
   const open = phase === 'open';
   const canVote = open;
@@ -374,7 +420,7 @@ function renderDishes() {
     const li = document.createElement('li');
     li.className = 'dish' + (canVote ? ' can-vote' : '') + (voted === d.id ? ' voted' : '');
     if (canVote) { li.tabIndex = 0; li.setAttribute('role', 'button'); }
-    const emo = document.createElement('span'); emo.className = 'emo'; emo.textContent = d.emoji || '🍽️';
+    const emo = dishThumb(d, true);
     const info = document.createElement('div'); info.className = 'info';
     const h = document.createElement('h3'); h.textContent = d.name;
     if (mine) { const t = document.createElement('span'); t.className = 'tag-mine'; t.textContent = 'MINE'; h.append(t); }
@@ -428,7 +474,7 @@ function renderResults() {
     const bar = document.createElement('span'); bar.className = 'bar'; bar.style.width = '0%';
     const inner = document.createElement('div'); inner.className = 'in';
     const r = document.createElement('span'); r.className = 'rank'; r.textContent = win ? '👑' : rank;
-    const emo = document.createElement('span'); emo.className = 'emo'; emo.textContent = d.emoji || '🍽️';
+    const emo = dishThumb(d, false);
     const info = document.createElement('div'); info.className = 'info';
     const h = document.createElement('h3'); h.textContent = d.name;
     const chef = document.createElement('div'); chef.className = 'chef'; chef.textContent = `by ${d.chef}`;
@@ -517,12 +563,51 @@ function openForm(d = null) {
   $('d-desc').value = d?.desc || '';
   const em = d?.emoji || EMOJIS[0];
   document.querySelectorAll('input[name=emoji]').forEach(r => r.checked = r.value === em);
+  setPhoto(d?.photo || '');
   $('form-msg').textContent = '';
   $('dish-form').hidden = false; $('add-toggle').hidden = true;
   $('dish-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
   setTimeout(() => $('d-name').focus({ preventScroll: true }), 300);
 }
 function closeForm() { editing = null; $('dish-form').hidden = true; $('add-toggle').hidden = phase !== 'open'; }
+
+// ── photo: shrink on the phone so it fits in Firestore (no Storage needed) ──
+let photoData = '';
+function setPhoto(url) {
+  photoData = url;
+  $('photo-prev').hidden = !url;
+  if (url) $('photo-img').src = url; else $('photo-img').removeAttribute('src');
+  $('photo-note').textContent = '';
+}
+function loadImage(file) {
+  return new Promise((ok, fail) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); ok(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); fail(new Error('decode')); };
+    img.src = url;
+  });
+}
+async function shrink(file) {
+  const img = await loadImage(file);
+  // 긴 변 900px부터 시작해서 300KB 안으로 들어올 때까지 줄여요
+  for (const [edge, q] of [[900, .72], [800, .65], [640, .6], [520, .55]]) {
+    const k = Math.min(1, edge / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    const out = c.toDataURL('image/jpeg', q);
+    if (out.length <= 300000) return out;
+  }
+  throw new Error('too big');
+}
+['d-cam', 'd-lib'].forEach(id => $(id).addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!file) return;
+  $('photo-note').textContent = '사진 준비 중…';
+  try { setPhoto(await shrink(file)); }
+  catch (err) { console.error(err); $('photo-note').textContent = '이 사진은 올릴 수 없어요. 다른 사진으로 해볼래요?'; }
+}));
+$('photo-del').addEventListener('click', () => setPhoto(''));
 
 async function removeDish(d) {
   if (!confirm(`'${d.name}'을(를) 삭제할까요?\n이 음식에 들어온 표는 무효가 돼요.`)) return;
@@ -538,12 +623,13 @@ $('dish-form').addEventListener('submit', async (e) => {
   const emoji = document.querySelector('input[name=emoji]:checked')?.value || '';
   if (!name) { $('form-msg').textContent = '음식 이름을 입력해 주세요.'; $('d-name').focus(); return; }
   if (!chef) { $('form-msg').textContent = '만든 사람 이름을 입력해 주세요.'; $('d-chef').focus(); return; }
+  if ($('photo-note').textContent === '사진 준비 중…') { $('form-msg').textContent = '사진을 준비하고 있어요. 잠시만요!'; return; }
   $('save-btn').disabled = true; $('form-msg').textContent = '';
   try {
     if (editing) {
-      await fs.updateDoc(fs.doc(db, 'dishes', editing.id), { name, chef, desc, emoji, pinHash: me.pinHash });
+      await fs.updateDoc(fs.doc(db, 'dishes', editing.id), { name, chef, desc, emoji, photo: photoData, pinHash: me.pinHash });
     } else {
-      await fs.addDoc(fs.collection(db, 'dishes'), { name, chef, desc, emoji, createdBy: me.id, pinHash: me.pinHash, createdAt: fs.serverTimestamp() });
+      await fs.addDoc(fs.collection(db, 'dishes'), { name, chef, desc, emoji, photo: photoData, createdBy: me.id, pinHash: me.pinHash, createdAt: fs.serverTimestamp() });
     }
     closeForm();
   } catch (err) {
