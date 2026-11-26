@@ -59,16 +59,20 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // 표: RSVP 1명당 1표, 마감 전까지 변경 가능 (관리자 집계에서 같은 사람의 표는 최신 1개만 셈)
+    // 표: RSVP 1명당 최대 2표(서로 다른 음식), 마감 전까지 변경 가능 (관리자 집계에서 같은 사람의 표 문서는 최신 1개만 셈)
     match /votes/{voteKey} {
+      function okDish(id) {
+        return id is string
+          && exists(/databases/$(database)/documents/dishes/$(id))
+          && get(/databases/$(database)/documents/dishes/$(id)).data.get('deleted', false) == false;
+      }
       function validVote() {
         let d = request.resource.data;
-        return d.keys().hasOnly(['voter', 'pinHash', 'dishId', 'updatedAt'])
+        return d.keys().hasOnly(['voter', 'pinHash', 'dishIds', 'updatedAt'])
           && isVoter(d.voter, d.pinHash)
-          && d.dishId is string
-          && (d.dishId == ''   // '' = 투표 취소
-            || (exists(/databases/$(database)/documents/dishes/$(d.dishId))
-              && get(/databases/$(database)/documents/dishes/$(d.dishId)).data.get('deleted', false) == false))
+          && d.dishIds is list && d.dishIds.size() <= 2   // [] = 투표 취소
+          && (d.dishIds.size() < 1 || okDish(d.dishIds[0]))
+          && (d.dishIds.size() < 2 || (okDish(d.dishIds[1]) && d.dishIds[1] != d.dishIds[0]))
           && d.updatedAt == request.time;
       }
       allow get: if true;          // 문서 ID는 이름+비밀번호로만 만들 수 있어서 본인만 찾을 수 있어요

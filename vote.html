@@ -340,7 +340,8 @@ $('emojis').innerHTML = EMOJIS.map((e, i) =>
 
 // ── state ───────────────────────────────────────────────────
 // me = { id: rsvp doc id, name, pinHash, voteKey }
-let me = lsGet('fg-voter'), phase = 'hidden', results = null, dishes = [], myVote = null, editing = null;
+let me = lsGet('fg-voter'), phase = 'hidden', results = null, dishes = [], myVotes = [], editing = null;
+const MAX_VOTES = 2;
 let unsubMyVote = null, phaseLoaded = false, dishesLoaded = false;
 
 // ── PIN boxes ───────────────────────────────────────────────
@@ -365,7 +366,7 @@ const shakePin = () => { const p = $('pin'); p.classList.remove('shake'); void p
 // ── banner ──────────────────────────────────────────────────
 const BANNER = {
   hidden:  ['🔒', '아직 열리지 않았어요', '파티 당일에 투표가 열려요. 조금만 기다려 주세요!'],
-  open:    ['🗳️', '투표 진행 중!', '음식을 등록하고, 제일 맛있었던 음식을 눌러 투표하세요. 1인 1표! 마감 전까지는 다른 음식으로 바꿀 수 있어요.'],
+  open:    ['🗳️', '투표 진행 중!', '음식을 등록하고, 맛있었던 음식을 눌러 투표하세요. 1인 최대 2표! 마감 전까지는 바꿀 수 있어요.'],
   closed:  ['⏳', '투표 마감!', '곧 결과가 발표돼요. 두근두근…'],
   results: ['🎉', '결과 발표!', '오늘의 Best Dish는…']
 };
@@ -406,19 +407,21 @@ function openLightbox(d) {
 function renderDishes() {
   const open = phase === 'open';
   const canVote = open;
-  const voted = dishes.some(d => d.id === myVote) ? myVote : null;   // ignore a vote for a dish that was deleted
+  const voted = myVotes.filter(id => dishes.some(d => d.id === id));   // ignore votes for dishes that were deleted
+  const left = MAX_VOTES - voted.length;
   $('me-name').textContent = me?.name || '';
   $('add-toggle').hidden = !open || !$('dish-form').hidden;
   if (!open) $('dish-form').hidden = true;
   $('anon').textContent = !open ? '투표가 마감됐어요.'
-    : voted ? '✅ 투표 완료! 다른 음식을 누르면 표가 옮겨가고, 한 번 더 누르면 취소돼요. 다른 손님들은 누가 어디에 투표했는지 몰라요.'
-    : '👆 제일 맛있었던 음식을 눌러 투표하세요. 1인 1표예요!';
+    : left === 0 ? '✅ 2표 모두 투표 완료! 체크된 음식을 한 번 더 누르면 취소돼요. 다른 손님들은 누가 어디에 투표했는지 몰라요.'
+    : voted.length ? `✅ 1표 투표했어요! 1표 더 할 수 있어요. 체크된 음식을 한 번 더 누르면 취소돼요.`
+    : '👆 맛있었던 음식을 눌러 투표하세요. 1인 최대 2표예요! (서로 다른 음식)';
   $('count').textContent = dishes.length ? `${dishes.length} DISHES` : '';
   $('dishes').innerHTML = '';
   dishes.forEach(d => {
     const mine = me && d.createdBy === me.id;
     const li = document.createElement('li');
-    li.className = 'dish' + (canVote ? ' can-vote' : '') + (voted === d.id ? ' voted' : '');
+    li.className = 'dish' + (canVote ? ' can-vote' : '') + (voted.includes(d.id) ? ' voted' : '');
     if (canVote) { li.tabIndex = 0; li.setAttribute('role', 'button'); }
     const emo = dishThumb(d, true);
     const info = document.createElement('div'); info.className = 'info';
@@ -525,7 +528,7 @@ $('login-view').addEventListener('submit', async (e) => {
   } finally { $('login-btn').disabled = false; }
 });
 $('logout-btn').addEventListener('click', () => {
-  me = null; myVote = null; lsSet('fg-voter', null);
+  me = null; myVotes = []; lsSet('fg-voter', null);
   if (unsubMyVote) { unsubMyVote(); unsubMyVote = null; }
   $('l-name').value = ''; pinBoxes.forEach(b => b.value = ''); $('login-msg').textContent = '';
   closeForm(); render();
@@ -535,7 +538,8 @@ function watchMyVote() {
   if (unsubMyVote) unsubMyVote();
   if (!me) return;
   unsubMyVote = fs.onSnapshot(fs.doc(db, 'votes', me.voteKey), (s) => {
-    myVote = (s.exists() && s.data().dishId) || null;
+    const v = s.exists() ? s.data() : {};
+    myVotes = Array.isArray(v.dishIds) ? v.dishIds : (v.dishId ? [v.dishId] : []);
     if (phase !== 'results' && me) renderDishes();
   }, (e) => console.error(e));
 }
@@ -543,13 +547,18 @@ function watchMyVote() {
 // ── actions ─────────────────────────────────────────────────
 async function castVote(dishId) {
   if (phase !== 'open' || !me) return;
-  const prev = myVote;
-  const next = myVote === dishId ? '' : dishId;   // tap the checked dish again → cancel the vote
-  myVote = next || null; renderDishes();   // optimistic
+  $('err').textContent = '';
+  const prev = myVotes;
+  const live = myVotes.filter(id => dishes.some(d => d.id === id));   // drop votes for deleted dishes
+  let next;
+  if (live.includes(dishId)) next = live.filter(id => id !== dishId);   // tap a checked dish again → cancel that vote
+  else if (live.length < MAX_VOTES) next = [...live, dishId];
+  else { $('err').textContent = '최대 2개까지 투표할 수 있어요! 체크된 음식 하나를 눌러 취소한 다음 골라주세요.'; return; }
+  myVotes = next; renderDishes();   // optimistic
   try {
-    await fs.setDoc(fs.doc(db, 'votes', me.voteKey), { voter: me.id, pinHash: me.pinHash, dishId: next, updatedAt: fs.serverTimestamp() });
+    await fs.setDoc(fs.doc(db, 'votes', me.voteKey), { voter: me.id, pinHash: me.pinHash, dishIds: next, updatedAt: fs.serverTimestamp() });
   } catch (e) {
-    console.error(e); myVote = prev; renderDishes();
+    console.error(e); myVotes = prev; renderDishes();
     $('err').textContent = e.code === 'permission-denied' ? '투표가 마감됐거나 로그인 정보가 맞지 않아요.' : '투표하지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
 }

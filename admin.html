@@ -283,7 +283,7 @@ $('show-all').addEventListener('click', () => { filter = null; render(); });
 let vPhase = 'hidden', vDishes = [], vVotes = [], vStarted = false;
 const PHASE_NOTE = {
   hidden: '투표 페이지가 닫혀 있어요. 손님은 메뉴에서 VOTE가 안 보이고, 들어와도 "아직 열리지 않았어요"만 떠요.',
-  open: '지금은 음식 등록과 투표를 할 수 있어요(RSVP 1명당 1표, 마감 전까지 변경 가능). 득표 현황은 관리자에게만 보여요.',
+  open: '지금은 음식 등록과 투표를 할 수 있어요(RSVP 1명당 최대 2표, 서로 다른 음식, 마감 전까지 변경 가능). 득표 현황은 관리자에게만 보여요.',
   closed: '투표가 마감됐어요. 손님 화면에는 "곧 결과 발표"가 떠요.',
   results: '손님 화면에 순위와 득표수가 공개됐어요. (누가 누구를 찍었는지는 공개되지 않아요)'
 };
@@ -297,9 +297,11 @@ function latestVotes() {
   });
   return Object.values(byVoter);
 }
+// 표 문서의 음식 목록 (예전 1표 형식 dishId도 처리, 같은 음식 중복은 1번만)
+const voteIds = (v) => [...new Set(Array.isArray(v.dishIds) ? v.dishIds.slice(0, 2) : (v.dishId ? [v.dishId] : []))];
 function tally() {
   const counts = Object.fromEntries(vDishes.map(d => [d.id, 0]));
-  latestVotes().forEach(v => { if (v.dishId in counts) counts[v.dishId]++; });
+  latestVotes().forEach(v => voteIds(v).forEach(id => { if (id in counts) counts[id]++; }));
   return counts;
 }
 function renderVote() {
@@ -308,7 +310,7 @@ function renderVote() {
   const counts = tally();
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const votersOf = {};
-  latestVotes().forEach(v => { (votersOf[v.dishId] ||= []).push(v.voter); });
+  latestVotes().forEach(v => voteIds(v).forEach(id => (votersOf[id] ||= []).push(v.voter)));
   const top = Math.max(1, ...Object.values(counts));
   $('v-total').textContent = `${vDishes.length} DISHES · ${total} VOTES`;
   $('tally').innerHTML = '';
